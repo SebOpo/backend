@@ -9,6 +9,26 @@ from app.crud import crud_organizations as org_crud
 from app.tests.utils.utils import random_lower_string
 
 
+def test_invite_existing_user(
+        client: TestClient,
+        test_db: Session,
+        superuser_token_headers: Dict[str, str]
+) -> None:
+
+    dim_org = org_crud.get_by_name(test_db, "DIM")
+    assert dim_org
+
+    # using a superuser email here
+    payload = {
+        "email": settings.FIRST_SUPERUSER,
+        "organization": dim_org.id
+    }
+
+    r = client.post(f"{settings.API_V1_STR}/users/invite", json=payload, headers=superuser_token_headers)
+    # unique email violation = HTTP 400
+    assert r.status_code == 400
+
+
 def test_invite_new_user(
         client: TestClient,
         test_db: Session,

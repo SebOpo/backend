@@ -221,7 +221,6 @@ def submit_location_reports(db: Session, *, obj_in: LocationReports, user_id: in
                                  old_object=old_reports,
                                  new_object=new_reports)
 
-
     # TODO rollback strategy if no changelog was created
 
     return location

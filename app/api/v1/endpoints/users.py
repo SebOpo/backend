@@ -187,6 +187,3 @@ async def delete_me(
         raise HTTPException(status_code=400, detail="Cannot perform such action")
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-# TODO user change organization route
-# TODO user change role route

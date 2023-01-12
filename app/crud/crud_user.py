@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, verify_password, create_access_token
-from app.models.user import User, role_permissions
+from app.models.user import User
+from app.models.organization import Organization
 from app.schemas.user import UserCreate, UserBase, UserInvite
 from app.core.config import settings
 from app.crud.crud_roles import get_role_by_name
@@ -47,11 +48,13 @@ def create_invite(db: Session, *, obj_in: UserInvite) -> Optional[User]:
     if not user_role:
         return None
 
-    # TODO CHECK IF ORGANIZATION EXISTS
+    db_org = db.query(Organization).get(obj_in.organization)
+    if not db_org:
+        return None
 
     db_obj = User(
         email=obj_in.email,
-        organization=obj_in.organization,
+        organization=db_org.id,
         is_active=False,
         role=user_role.verbose_name,
         permissions=user_role.permissions,
@@ -155,7 +158,6 @@ def confirm_password_reset(
     db.commit()
     db.refresh(user)
     return user
-
 
 
 def change_role(

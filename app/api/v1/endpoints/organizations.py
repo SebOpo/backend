@@ -44,8 +44,6 @@ async def search_organizations_by_name(
         current_active_user: models.User = Security(get_current_active_user,
                                                     scopes=["organizations:view"])
 ) -> Any:
-    print(query)
-    print(query.lower())
     organizations = crud.get_by_substr(db, query.lower())
     if not organizations:
         return []

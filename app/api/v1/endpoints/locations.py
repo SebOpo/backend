@@ -15,6 +15,7 @@ from app.crud import crud_geospatial as geo_crud
 from app.crud import crud_zones as zone_crud
 from app.utils import geocoding
 from app.core.config import settings
+from app.utils.bulk_locations import upload_locations
 
 router = APIRouter()
 
@@ -226,27 +227,42 @@ async def get_activity_feed(
 async def bulk_add_locations(
     sheet_type: int,
     file: UploadFile = File(...),
-    current_user: models.User = Security(get_current_active_user,
-                                         scopes=['locations:delete'])
+    # current_user: models.User = Security(get_current_active_user,
+    #                                      scopes=['locations:delete'])
 ) -> Any:
 
-    from app.utils.bulk_locations import bulk_create
+    if file.content_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        raise HTTPException(status_code=400, detail="Unsupported file format. Please verify what you are sending.")
 
-    filepath = f"app/datasets/{file.filename}"
-    
+    filepath = "app/datasets/{}".format(file.filename)
+
     if not os.path.exists('app/datasets'):
         os.makedirs('app/datasets')
 
-    async with aiofiles.open(filepath, "wb") as file_object:
+    async with aiofiles.open(filepath, 'wb') as file_object:
         content = await file.read()
         await file_object.write(content)
 
-    op_status = bulk_create(spreadsheet_path=filepath, sheet_type=sheet_type)
+    locations = await upload_locations(filepath, "excel")
+    os.remove(filepath)
 
-    if not op_status:
-        raise HTTPException(status_code=400, detail=op_status)
+    return locations
 
-    return Response(status_code=status.HTTP_201_CREATED)
+    # filepath = f"app/datasets/{file.filename}"
+    #
+    # if not os.path.exists('app/datasets'):
+    #     os.makedirs('app/datasets')
+    #
+    # async with aiofiles.open(filepath, "wb") as file_object:
+    #     content = await file.read()
+    #     await file_object.write(content)
+    #
+    # op_status = bulk_create(spreadsheet_path=filepath, sheet_type=sheet_type)
+    #
+    # if not op_status:
+    #     raise HTTPException(status_code=400, detail=op_status)
+    #
+    # return Response(status_code=status.HTTP_201_CREATED)
 
 
 # TODO REMOVE ENDPOINT ( TESTING ONLY )

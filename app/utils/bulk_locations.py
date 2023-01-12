@@ -1,6 +1,8 @@
 from typing import List, Dict, Generator
+import logging
 
 from openpyxl import load_workbook
+from openpyxl.worksheet.worksheet import Worksheet
 from sqlalchemy.orm import Session
 
 from app.utils.geocoding import geocode_address
@@ -11,6 +13,9 @@ from app.crud.crud_user import get_by_email
 from app.schemas.location import LocationReports
 from app.core.config import settings
 from app.crud.crud_location import get_location_by_coordinates, submit_location_reports
+
+
+logger = logging.getLogger(settings.PROJECT_NAME)
 
 
 def serialize_spreadsheet(spreadsheet, sheet_type: int) -> List[Dict]:
@@ -98,19 +103,19 @@ def serialize_spreadsheet(spreadsheet, sheet_type: int) -> List[Dict]:
     return locations
 
 
-def geocode_locations(locations: List[Dict]):
-
-    geocoded_locations = []
-    for location in locations:
-        addr_str = '{}'.format(location["address"] + " " + str(location.get('street_number')) if location.get('street_number',None) else location["address"])
-        coordinates = geocode_address(addr_str, location["city"])
-        if not coordinates:
-            continue
-        location["lat"] = coordinates.latitude
-        location["lng"] = coordinates.longitude
-        geocoded_locations.append(location)
-
-    return geocoded_locations
+# def geocode_locations(locations: List[Dict]):
+#
+#     geocoded_locations = []
+#     for location in locations:
+#         addr_str = '{}'.format(location["address"] + " " + str(location.get('street_number')) if location.get('street_number',None) else location["address"])
+#         coordinates = geocode_address(addr_str, location["city"])
+#         if not coordinates:
+#             continue
+#         location["lat"] = coordinates.latitude
+#         location["lng"] = coordinates.longitude
+#         geocoded_locations.append(location)
+#
+#     return geocoded_locations
 
 
 def add_to_db(location):
@@ -177,3 +182,120 @@ def bulk_create(spreadsheet_path: str, sheet_type: int):
     except Exception as e:
         print(e)
         return None
+
+
+async def serialize_excel(
+    spreadsheet: Worksheet
+) -> Dict:
+    locations = []
+    unprocessed_locations = []
+    for row in spreadsheet.iter_rows(values_only=True):
+        if not row[0]:
+            continue
+        try:
+            location = {
+                "address": row[0].strip(),
+                "street_number": row[1],
+                "city": row[2],
+                "country": row[3],
+                "postcode": row[4],
+                "reports": {
+                    "buildingCondition": {
+                        "flag": row[5],
+                        "description": row[11] if row[11] else ""
+                    },
+                    "electricity": {
+                        "flag": row[6],
+                        "description": ""
+                    },
+                    "carEntrance": {
+                        "flag": row[7],
+                        "description": ""
+                    },
+                    "water": {
+                        "flag": row[8],
+                        "description": ""
+                    },
+                    "fuelStation": {
+                        "flag": row[9],
+                        "description": ""
+                    },
+                    "pharmacy": {
+                        "flag": row[10],
+                        "description": ""
+                    }
+                }
+            }
+            locations.append(location)
+
+        except Exception as e:
+            unprocessed_locations.append({
+                "location": row,
+                "code": "SERIALIZATION_ERROR",
+                "detail": e
+            })
+
+    return {
+        "processed": locations,
+        "unprocessed": unprocessed_locations
+    }
+
+
+async def geocode_locations(
+    locations: List[Dict]
+) -> Dict:
+
+    geocoded_locations = []
+    unprocessed_locations = []
+    for location in locations:
+        address_string = "{}, {}".format(location.get('address'), location.get('street_number'))
+        coordinates = geocode_address(
+            address=address_string,
+            city=location.get('city')
+        )
+        if not coordinates:
+            unprocessed_locations.append({
+                "location": location,
+                "code": "GEOCODING_ERROR",
+                "detail": "Address not found"
+            })
+            continue
+        location["lat"] = coordinates.latitude
+        location["lng"] = coordinates.longitude
+        geocoded_locations.append(location)
+
+    return {
+        "geocoded": geocoded_locations,
+        "unprocessed": unprocessed_locations
+    }
+
+
+async def upload_locations(
+        filepath: str,
+        doctype: str
+):
+
+    unprocessed_locations = []
+
+    if doctype == "excel":
+        workbook = load_workbook(filepath)
+        sheet = workbook.active
+        logger.debug("XLSX loaded, starting serialization.")
+
+        serialization_results = await serialize_excel(sheet)
+        unprocessed_locations = serialization_results.get('unprocessed')
+        serialized_locations = serialization_results.get('processed')
+        logger.debug("Processed locations: {}".format(len(serialized_locations)))
+        logger.debug("Unprocessed locations: {}".format(len(unprocessed_locations)))
+
+        logger.debug("Starting geocoding")
+        geocoding_results = await geocode_locations(serialized_locations)
+        geocoded_locations = geocoding_results.get('geocoded')
+        unprocessed_locations.append(loc for loc in geocoding_results.get('unprocessed'))
+        logger.debug("Geocoded locations: {}".format(len(geocoded_locations)))
+        logger.debug("Could not geocode: {}".format(len(geocoding_results.get('unprocessed'))))
+
+        logger.debug("Adding {} locations to database".format(len(geocoded_locations)))
+
+        return unprocessed_locations
+
