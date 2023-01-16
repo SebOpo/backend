@@ -1,4 +1,4 @@
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Dict
 from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
@@ -228,6 +228,61 @@ def submit_location_reports(db: Session, *, obj_in: LocationReports, user_id: in
 
 def get_activity_feed(db: Session, records: int = 10) -> List[Location]:
     return db.query(Location).filter(Location.status == 3).order_by(desc(Location.created_at)).limit(records)
+
+
+def bulk_insert_locations(
+        db: Session,
+        locations: List[Dict]
+) -> Dict:
+
+    added_locations = []
+    exceptions = []
+
+    for location in locations:
+        try:
+            db_obj = Location(
+                address=location.get('address'),
+                index=location.get('index'),
+                lat=location.get('lat'),
+                lng=location.get('lng'),
+                country=location.get('country'),
+                city=location.get('city'),
+                status=3,
+                reports=location.get('reports'),
+                street_number=location.get('street_number', None)
+            )
+
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
+
+            index = create_index(
+                db,
+                location_id=db_obj.id,
+                lat=db_obj.lat,
+                lng=db_obj.lng,
+                status=db_obj.status
+            )
+
+            submit_location_reports(
+                db,
+                obj_in=LocationReports(location_id=db_obj.id, **location.get('reports')),
+                user_id=1
+            )
+            added_locations.append(db_obj)
+
+        except Exception as e:
+            print(e)
+            exceptions.append({
+                "location": location,
+                "code": "DATABASE_ERROR",
+                "detail": e
+            })
+
+    return {
+        "added": added_locations,
+        "unprocessed": exceptions
+    }
 
 
 def delete_location(db: Session, location_id: int) -> Optional[Location]:
