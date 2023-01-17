@@ -1,10 +1,6 @@
 import random
 
-from sqlalchemy.orm import Session
-
 from app.schemas import enums
-from app.utils.time_generator import random_date
-from app import models
 
 
 def get_random_enum_choice(enum):
@@ -40,9 +36,3 @@ def populate_reports():
             "distance": random.uniform(0.1, 9.9)
         }
     }
-
-
-# def populate_changelogs():
-#     return {
-#         "time": ran
-#     }

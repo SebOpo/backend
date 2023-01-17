@@ -35,4 +35,4 @@ def return_template(template_type: str, *, link: str = None) -> dict:
         }
     }
 
-    return templates[template_type]
+    return templates.get(template_type, None)

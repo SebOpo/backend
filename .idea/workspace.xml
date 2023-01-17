@@ -3,7 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="b17898b8-43cf-49e9-b567-ac4edc9b2078" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/v1/endpoints/guest_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/v1/endpoints/guest_user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/core/logger_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/core/logger_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/crud/crud_location.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/crud/crud_location.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/tests/utils/db_setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/tests/utils/db_setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils/bulk_locations.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils/bulk_locations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -282,7 +286,13 @@
       <workItem from="1672733165117" duration="3529000" />
       <workItem from="1672738193608" duration="7206000" />
       <workItem from="1672818312830" duration="345000" />
-      <workItem from="1672909443889" duration="2327000" />
+      <workItem from="1672909443889" duration="6539000" />
+      <workItem from="1672997490829" duration="3072000" />
+      <workItem from="1673127850516" duration="226000" />
+      <workItem from="1673253401615" duration="9229000" />
+      <workItem from="1673446208760" duration="7698000" />
+      <workItem from="1673509822869" duration="666000" />
+      <workItem from="1673791006580" duration="755000" />
     </task>
     <servers />
   </component>

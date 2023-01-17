@@ -139,7 +139,7 @@ async def reset_user_password(
         send_email(
             [user.email],
             'password-renewal',
-            link='{}/password/renewal/?access_token={}'.format(settings.DOMAIN_ADDRESS, user.password_renewal_token)
+            link='{}/password-reset/?access_token={}'.format(settings.DOMAIN_ADDRESS, user.password_renewal_token)
         )
 
     # TODO CHECK FOR EMAIL STATUS
@@ -187,6 +187,3 @@ async def delete_me(
         raise HTTPException(status_code=400, detail="Cannot perform such action")
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-# TODO user change organization route
-# TODO user change role route

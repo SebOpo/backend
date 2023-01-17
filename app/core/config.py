@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 10
-    PROJECT_NAME: str = os.getenv("PROJECT_NAME", "PROJECTDIM")
+    PROJECT_NAME: str = os.getenv("PROJECT_NAME", "PROJECT-DIM")
     SERVER_NAME: str = os.getenv("SERVER_NAME", "Google Maps Project")
     SERVER_HOST: AnyHttpUrl = os.getenv("SERVER_HOST", "http://127.0.0.1:7000")
     DOMAIN_ADDRESS: AnyHttpUrl = os.getenv("DOMAIN_ADDRESS", "https://projectdim.org")
@@ -49,8 +49,11 @@ class Settings(BaseSettings):
 
     EMAILS_ENABLED: bool = os.getenv('EMAILS_ENABLED', True)
     OTP_EXPIRE_MINUTES: int = os.getenv("OTP_EXPIRE_MINUTES", 15)
+    OTP_HOUR_RATE_LIMIT: int = os.getenv("OTP_HOUR_RATE_LIMIT", 5)
     AMAZON_APP_ID: str = os.getenv('AMAZON_APP_ID', "none")
     AWS_PROFILE: str = os.getenv("AWS_PROFILE", "dim")
+
+    GMAPS_APIKEY: str = os.getenv('GMAPS_APIKEY', None)
 
     class Config:
         case_sensitive = True
