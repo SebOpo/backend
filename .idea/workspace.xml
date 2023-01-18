@@ -3,10 +3,17 @@
   <component name="ChangeListManager">
     <list default="true" id="b17898b8-43cf-49e9-b567-ac4edc9b2078" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/core/logger_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/core/logger_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/v1/endpoints/guest_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/v1/endpoints/guest_user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/v1/endpoints/locations.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/v1/endpoints/locations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/crud/crud_location.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/crud/crud_location.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/tests/utils/db_setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/tests/utils/db_setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/utils/bulk_locations.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils/bulk_locations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas/changelog.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/changelog.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas/location.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/location.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas/organization.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/organization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas/session.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/session.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils/email_sender.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils/email_sender.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils/time_generator.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -293,6 +300,8 @@
       <workItem from="1673446208760" duration="7698000" />
       <workItem from="1673509822869" duration="666000" />
       <workItem from="1673791006580" duration="755000" />
+      <workItem from="1673961096481" duration="4700000" />
+      <workItem from="1674037166517" duration="7911000" />
     </task>
     <servers />
   </component>

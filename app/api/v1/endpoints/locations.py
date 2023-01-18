@@ -174,7 +174,7 @@ async def remove_report_assignment(location_id: int,
     return location.to_json()
 
 
-@router.get('/assigned-locations', response_model=List[schemas.LocationAdmin])
+@router.get('/assigned-locations', response_model=List[schemas.LocationOut])
 async def get_user_assigned_locations(db: Session = Depends(get_db),
                                       current_user: models.User = Security(get_current_active_user,
                                                                            scopes=['locations:view'])) -> Any:
@@ -212,7 +212,7 @@ async def remove_location(location_id: int,
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get('/recent-reports')
+@router.get('/recent-reports', response_model=List[schemas.LocationOut])
 async def get_activity_feed(
         records: int = 10,
         db: Session = Depends(get_db)
