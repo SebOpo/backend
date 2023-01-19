@@ -24,12 +24,7 @@ class LocationCreate(LocationBase):
     lng: float
 
 
-class LocationSearch(LocationBase):
-    lat: Dict
-    lng: Dict
-
-
-class TestLocationSearch(BaseModel):
+class LocationSearch(BaseModel):
     lat: float
     lng: float
     zoom: Optional[int]

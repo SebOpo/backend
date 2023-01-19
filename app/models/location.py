@@ -8,6 +8,7 @@ import geopy.distance
 
 from app.db.base_class import Base
 from app.models.guest_user import GuestUser
+from app.db.utc_convertation import utcnow
 
 status_list = {
     1: "Awaiting review",
@@ -20,8 +21,8 @@ class Location(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default=utcnow())
+    updated_at = Column(DateTime, default=utcnow())
 
     requested_by = Column(Integer, ForeignKey(GuestUser.id, ondelete="SET NULL"), nullable=True)
 

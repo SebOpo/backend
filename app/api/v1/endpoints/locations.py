@@ -44,13 +44,17 @@ async def get_location(lat: float, lng: float, db: Session = Depends(get_db)) ->
 
 
 @router.post('/cord_search')
-async def get_locations_by_coordinates(coordinates: schemas.TestLocationSearch, db: Session = Depends(get_db)) -> Any:
+async def get_locations_by_coordinates(
+        coordinates: schemas.LocationSearch,
+        db: Session = Depends(get_db)
+) -> Any:
 
-    # locations = crud.get_locations_in_range(db, coordinates.lat, coordinates.lng)
-    #
-    # return [location.to_json() for location in locations]
-
-    markers = geo_crud.search_indexes_in_range(db, coordinates.lat, coordinates.lng, coordinates.zoom)
+    markers = geo_crud.search_indexes_in_range(
+        db,
+        coordinates.lat,
+        coordinates.lng,
+        coordinates.zoom
+    )
 
     print(f"Markers : {len(markers)}")
 
