@@ -31,7 +31,7 @@ class User(Base):
     email_confirmed = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=True)
 
-    permissions = Column(JSONB, default={})
+    # permissions = Column(JSONB, default={})
     role = Column(String, nullable=False)
 
     registration_token = Column(String)

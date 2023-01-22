@@ -43,7 +43,7 @@ async def get_location(lat: float, lng: float, db: Session = Depends(get_db)) ->
     return location.to_json()
 
 
-@router.post('/cord_search')
+@router.post('/cord_search', response_model=List[schemas.GeospatialRecord])
 async def get_locations_by_coordinates(
         coordinates: schemas.LocationSearch,
         db: Session = Depends(get_db)
@@ -58,7 +58,7 @@ async def get_locations_by_coordinates(
 
     print(f"Markers : {len(markers)}")
 
-    return [marker.to_json() for marker in markers]
+    return markers
 
 
 @router.get('/location-info', response_model=schemas.LocationOut)

@@ -8,7 +8,7 @@ from app.models.user import User
 from app.models.organization import Organization
 from app.schemas.user import UserCreate, UserBase, UserInvite
 from app.core.config import settings
-from app.crud.crud_roles import get_role_by_name
+from app.crud.crud_oauth import roles
 
 
 def get_by_email(db: Session, *, email: str) -> Optional[User]:
@@ -19,9 +19,14 @@ def get(db: Session, *, user_id: int) -> Optional[User]:
     return db.query(User).get(user_id)
 
 
-def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
+def create(
+        db: Session,
+        *,
+        obj_in: UserCreate,
+        role: str
+) -> Optional[User]:
 
-    user_role = get_role_by_name(db, role)
+    user_role = roles.get_role_by_name(db, role)
 
     if not user_role:
         return None
@@ -33,7 +38,6 @@ def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
         full_name=obj_in.full_name,
         role=user_role.verbose_name,
         organization=obj_in.organization,
-        permissions=user_role.permissions,
         email_confirmed=True,
     )
     db.add(db_obj)
@@ -44,7 +48,7 @@ def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
 
 def create_invite(db: Session, *, obj_in: UserInvite) -> Optional[User]:
 
-    user_role = get_role_by_name(db, "aid_worker")
+    user_role = roles.get_role_by_name(db=db, role_name="aid_worker")
     if not user_role:
         return None
 
@@ -57,7 +61,6 @@ def create_invite(db: Session, *, obj_in: UserInvite) -> Optional[User]:
         organization=db_org.id,
         is_active=False,
         role=user_role.verbose_name,
-        permissions=user_role.permissions,
         registration_token=create_access_token(subject=obj_in.email, scopes=['users:confirm']),
         registration_token_expires=datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
@@ -170,12 +173,12 @@ def change_role(
     if not user:
         return None
 
-    role = get_role_by_name(db, role)
+    role = roles.get_role_by_name(db, role)
     if not role:
         return None
 
     user.role = role.verbose_name
-    user.permissions = role.permissions
+    # user.permissions = role.permissions
 
     db.commit()
     db.refresh(user)

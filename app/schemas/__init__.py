@@ -7,3 +7,5 @@ from .changelog import ChangelogOut
 from .roles import UserRole
 from .zone import ZoneBase
 from .guest_user import LocationRequestOtp
+from .geo_index import GeospatialRecord
+from .oauth import *
