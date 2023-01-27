@@ -1,10 +1,10 @@
-from typing import Optional, Dict, Union
-from typing_extensions import TypedDict
+from typing import Optional, Dict
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from app.schemas import report
+from app.schemas.validators import convert_to_utc
 
 # TODO LocationOut class with typed dict position (check to_json location method)
 
@@ -20,20 +20,11 @@ class LocationBase(BaseModel):
 
 
 class LocationCreate(LocationBase):
-    # address: Optional[str] = None
     lat: float
     lng: float
-    # index: Optional[int] = None
-    # city: Optional[str] = None
-    # country: Optional[str] = None
 
 
-class LocationSearch(LocationBase):
-    lat: Dict
-    lng: Dict
-
-
-class TestLocationSearch(BaseModel):
+class LocationSearch(BaseModel):
     lat: float
     lng: float
     zoom: Optional[int]
@@ -56,13 +47,10 @@ class LocationOut(BaseModel):
     reported_by: Optional[int] = None
     report_expires: Optional[datetime] = None
 
+    _utc_datetime = validator('created_at', 'updated_at', 'report_expires', allow_reuse=True)(convert_to_utc)
+
     class Config:
         orm_mode = True
-
-
-class LocationAdmin(LocationOut):
-    reported_by: Optional[int] = None
-    report_expires: Optional[datetime] = None
 
 
 # TODO convert to dataclasses with default vals

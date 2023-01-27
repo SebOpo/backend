@@ -6,6 +6,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 from app.db.base_class import Base
 from app.models.organization import Organization
 
+from app.db.utc_convertation import utcnow
+
 role_permissions = {
     "aid_worker": ["locations:view", "locations:edit", "users:me", "users:edit"],
     "platform_administrator": ["locations:view", "locations:delete", "users:create", "users:me", "users:edit"]
@@ -16,7 +18,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default=utcnow())
     last_activity = Column(DateTime)
 
     username = Column(String)
@@ -29,7 +31,7 @@ class User(Base):
     email_confirmed = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=True)
 
-    permissions = Column(JSONB, default={})
+    # permissions = Column(JSONB, default={})
     role = Column(String, nullable=False)
 
     registration_token = Column(String)

@@ -12,7 +12,11 @@ ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
 
 
-def create_access_token(subject: Union[str, Any], scopes: list, expires_delta: timedelta = None) -> str:
+def create_access_token(
+        subject: Union[str, Any],
+        scopes: list,
+        expires_delta: timedelta = None
+) -> str:
 
     if expires_delta:
         expire = datetime.utcnow() + expires_delta

@@ -13,12 +13,13 @@ class GeospatialIndex(Base):
     lng = Column(Float)
     status = Column(Integer)
 
-    def to_json(self):
-        return {
-            "position": {
-                "lat": self.lat,
-                "lng": self.lng
-            },
-            "status": self.status,
-            "location_id": self.location_id
-        }
+    # Removed this in favor of a pydantic validator. Subject to remove in the next version.
+    # def to_json(self):
+    #     return {
+    #         "position": {
+    #             "lat": self.lat,
+    #             "lng": self.lng
+    #         },
+    #         "status": self.status,
+    #         "location_id": self.location_id
+    #     }

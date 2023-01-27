@@ -1,7 +1,9 @@
 import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
+
+from app.schemas.validators import convert_to_utc
 
 
 class UserBase(BaseModel):
@@ -39,21 +41,6 @@ class UserOrganizationDetails(BaseModel):
         orm_mode = True
 
 
-class UserOut(UserBase):
-    id: int
-    last_activity: Optional[datetime.datetime] = None
-    organization: Optional[int]
-    email_confirmed: bool
-    is_active: bool
-    role: str
-    organization_model: Optional[UserOrganizationDetails] = None
-    # TODO REMOVE
-    registration_token: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
-
 class UserRepresentation(UserBase):
     id: int
     last_activity: Optional[datetime.datetime] = None
@@ -62,5 +49,13 @@ class UserRepresentation(UserBase):
     organization: Optional[int]
     organization_model: Optional[UserOrganizationDetails] = None
 
+    _utc_datetime = validator('last_activity', allow_reuse=True)(convert_to_utc)
+
     class Config:
         orm_mode = True
+
+
+class UserOut(UserRepresentation):
+    role: str
+    # TODO REMOVE
+    registration_token: Optional[str] = None

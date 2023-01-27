@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 def send_email(to_addresses: List[str], template_type: str, *, link: str = None):
 
+    # TODO MOVE TO THE CATCH BLOCK
+
     client = boto3.client('pinpoint')
     charset = 'UTF-8'
     template = return_template(template_type, link=link)

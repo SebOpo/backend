@@ -13,6 +13,8 @@ from app.api.dependencies import get_db
 from app.crud import crud_user as crud
 from app.crud import crud_sessions
 
+from app.crud.crud_oauth import roles
+
 router = APIRouter()
 
 
@@ -21,7 +23,11 @@ async def login_user(db: Session = Depends(get_db), form_data: OAuth2PasswordReq
     # Base Oauth2 Form only has 2 fields, username and password, so we are using email here,
     # but passing it as a username.
 
-    user = crud.authenticate(db, email=form_data.username, password=form_data.password)
+    user = crud.authenticate(
+        db=db,
+        email=form_data.username,
+        password=form_data.password
+    )
 
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
@@ -29,8 +35,19 @@ async def login_user(db: Session = Depends(get_db), form_data: OAuth2PasswordReq
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
 
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(user.id, user.permissions, expires_delta=access_token_expires)
+    user_role = roles.get_role_by_name(
+        db=db,
+        role_name=user.role
+    )
+
+    access_token_expires = timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+    access_token = create_access_token(
+        subject=user.id,
+        scopes=[s.scope for s in user_role.scopes],
+        expires_delta=access_token_expires
+    )
 
     # TODO
     # session = crud_sessions.create(db, user_id=user.id, access_token=access_token)

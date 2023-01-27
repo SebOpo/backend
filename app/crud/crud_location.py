@@ -11,6 +11,7 @@ from app.models.user import User
 from app.models.geospatial_index import GeospatialIndex
 from app.schemas.location import LocationCreate, LocationReports
 from app.utils.populate_db import populate_reports
+from app.core.config import settings
 
 
 def create_location(db: Session, *, obj_in: LocationCreate) -> Location:
@@ -238,11 +239,13 @@ def bulk_insert_locations(
     added_locations = []
     exceptions = []
 
+    reporting_user = db.query(User).filter(User.email == settings.FIRST_SUPERUSER).first()
+
     for location in locations:
         try:
             db_obj = Location(
                 address=location.get('address'),
-                index=location.get('index'),
+                index=location.get('postcode'),
                 lat=location.get('lat'),
                 lng=location.get('lng'),
                 country=location.get('country'),
@@ -267,7 +270,7 @@ def bulk_insert_locations(
             submit_location_reports(
                 db,
                 obj_in=LocationReports(location_id=db_obj.id, **location.get('reports')),
-                user_id=1
+                user_id=reporting_user.id
             )
             added_locations.append(db_obj)
 

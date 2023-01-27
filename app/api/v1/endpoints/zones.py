@@ -18,7 +18,7 @@ async def restrict_zone(
         zone: schemas.ZoneBase,
         db: Session = Depends(get_db),
         current_user: models.User = Security(get_current_active_user,
-                                             scopes=['zones:restrict'])
+                                             scopes=['zones:create'])
 ) -> Any:
 
     existing_zone = crud.get_zone_by_verbose_name(db, zone.value)
@@ -39,7 +39,7 @@ async def allow_zone(
         zone_id: int,
         db: Session = Depends(get_db),
         current_user: models.User = Security(get_current_active_user,
-                                             scopes=['zones:unrestrict'])
+                                             scopes=['zones:edit'])
 ) -> Any:
 
     result = crud.allow_zone(db, zone_id)

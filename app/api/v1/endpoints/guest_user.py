@@ -15,6 +15,7 @@ from app import schemas
 from app.crud import crud_location as location_crud
 from app.crud import crud_zones as zone_crud
 from app.utils import geocoding
+from app.utils.time_utils import utc_convert
 
 
 router = APIRouter()
@@ -59,7 +60,7 @@ async def request_otp_code(
     return {
         "status": "success",
         "expiration_minutes": settings.OTP_EXPIRE_MINUTES,
-        "expires_at": (datetime.utcnow() + timedelta(minutes=settings.OTP_EXPIRE_MINUTES)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        "expires_at": utc_convert(datetime.utcnow() + timedelta(minutes=settings.OTP_EXPIRE_MINUTES))
     }
 
 

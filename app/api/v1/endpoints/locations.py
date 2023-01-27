@@ -43,18 +43,22 @@ async def get_location(lat: float, lng: float, db: Session = Depends(get_db)) ->
     return location.to_json()
 
 
-@router.post('/cord_search')
-async def get_locations_by_coordinates(coordinates: schemas.TestLocationSearch, db: Session = Depends(get_db)) -> Any:
+@router.post('/cord_search', response_model=List[schemas.GeospatialRecord])
+async def get_locations_by_coordinates(
+        coordinates: schemas.LocationSearch,
+        db: Session = Depends(get_db)
+) -> Any:
 
-    # locations = crud.get_locations_in_range(db, coordinates.lat, coordinates.lng)
-    #
-    # return [location.to_json() for location in locations]
-
-    markers = geo_crud.search_indexes_in_range(db, coordinates.lat, coordinates.lng, coordinates.zoom)
+    markers = geo_crud.search_indexes_in_range(
+        db,
+        coordinates.lat,
+        coordinates.lng,
+        coordinates.zoom
+    )
 
     print(f"Markers : {len(markers)}")
 
-    return [marker.to_json() for marker in markers]
+    return markers
 
 
 @router.get('/location-info', response_model=schemas.LocationOut)
@@ -174,7 +178,7 @@ async def remove_report_assignment(location_id: int,
     return location.to_json()
 
 
-@router.get('/assigned-locations', response_model=List[schemas.LocationAdmin])
+@router.get('/assigned-locations', response_model=List[schemas.LocationOut])
 async def get_user_assigned_locations(db: Session = Depends(get_db),
                                       current_user: models.User = Security(get_current_active_user,
                                                                            scopes=['locations:view'])) -> Any:
@@ -212,7 +216,7 @@ async def remove_location(location_id: int,
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get('/recent-reports')
+@router.get('/recent-reports', response_model=List[schemas.LocationOut])
 async def get_activity_feed(
         records: int = 10,
         db: Session = Depends(get_db)

@@ -5,13 +5,15 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from app.core.config import settings
 
+from app.db.utc_convertation import utcnow
+
 
 class SessionHistory(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    created_at = Column(DateTime, default=func.now())
-    expires_at = Column(DateTime, default=func.now() + timedelta(settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    created_at = Column(DateTime, default=utcnow())
+    expires_at = Column(DateTime, default=utcnow() + timedelta(settings.ACCESS_TOKEN_EXPIRE_MINUTES))
 
     user_id = Column(Integer, ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
 
