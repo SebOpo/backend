@@ -28,7 +28,8 @@ services:
       - ./.env
 
     ports:
-      - "${SERVER_HOST_PORT}:7000"
+      # By default, exposes 7000 on the host
+      - "${SERVER_HOST_PORT:-7000}:7000"
     depends_on:
       pgdatabase:
         condition: service_healthy
