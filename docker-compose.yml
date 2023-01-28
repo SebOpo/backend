@@ -3,43 +3,51 @@ services:
   pgdatabase:
     container_name: pgdatabase_container
     image: postgres:14.5
-    restart: always
+    platform: linux/amd64
     env_file:
       - ./.env
+
     ports:
       - "5432:5432"
-    volumes: 
-      - pg-data:/var/lib/postgresql/data
+
+    restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
-      
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
   fastapi:
     container_name: fastapi_container
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/src
     env_file:
       - ./.env
+
     ports:
       - "${SERVER_HOST_PORT}:7000"
     depends_on:
       pgdatabase:
         condition: service_healthy
-      
+    volumes:
+      - ./:/src
+
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
-    restart: always
+    platform: linux/amd64
+
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@projectdim.org
       PGADMIN_DEFAULT_PASSWORD: dim
+
     ports:
       - "5050:80"
+
+    restart: always
     depends_on:
       pgdatabase:
         condition: service_healthy
