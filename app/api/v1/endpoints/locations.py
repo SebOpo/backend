@@ -2,10 +2,9 @@ from typing import Any, List
 import os
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status, Response, UploadFile, File
-
 import aiofiles
-
 from sqlalchemy.orm import Session
+from fastapi.encoders import jsonable_encoder
 
 from app.api.dependencies import get_db, get_current_active_user
 from app import schemas, models
@@ -16,19 +15,63 @@ from app.crud import crud_zones as zone_crud
 from app.utils import geocoding
 from app.core.config import settings
 from app.utils.bulk_locations import upload_locations
+from app.schemas.enums import GeocoderEnum
+from app.crud.crud_location import locations
+from app.crud.crud_geospatial import geospatial_index
 
 router = APIRouter()
 
 
-# TODO REMOVE ROUTE
-@router.post('/create')
-async def create_location(location: schemas.LocationCreate, db: Session = Depends(get_db)) -> Any:
-
-    new_location = crud.create_location(db, obj_in=location)
-
-    if not new_location:
-        raise HTTPException(status_code=400, detail="Cannot create a location")
-
+@router.post('/add', response_model=schemas.LocationOut)
+async def add_new_location(
+    location: schemas.LocationCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Security(
+        get_current_active_user,
+        scopes=['locations:create']
+    )
+) -> Any:
+    # Checking if the new location does not intersect with restricted ones.
+    restricted_intersection = zone_crud.check_new_point_intersections(
+        db=db,
+        lat=location.lat,
+        lng=location.lng
+    )
+    if restricted_intersection:
+        raise HTTPException(
+            status_code=403,
+            detail="Locations in this area are restricted"
+        )
+    # Checking if the new location does not already exist
+    existing_location = crud.get_location_by_coordinates(
+        db=db,
+        lat=location.lat,
+        lng=location.lng
+    )
+    if existing_location:
+        raise HTTPException(
+            status_code=400,
+            detal="Such location already exists"
+        )
+    # Creating a location itself
+    new_location = locations.create_new_location(
+        db=db,
+        location=location,
+        reported_by=current_user
+    )
+    # Creating a geospatial index
+    geo_index = geospatial_index.create(
+        db=db,
+        obj_in=schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
+    )
+    # Adding location changelog record
+    changelog = logs_crud.create_changelog(
+        db=db,
+        location_id=new_location.id,
+        old_object={},
+        new_object=new_location.reports,
+    )
+    # TODO ROLLBACK IF NONE ADDED
     return new_location.to_json()
 
 
@@ -43,9 +86,9 @@ async def get_location(lat: float, lng: float, db: Session = Depends(get_db)) ->
     return location.to_json()
 
 
-@router.post('/cord_search', response_model=List[schemas.GeospatialRecord])
+@router.post('/cord_search', response_model=List[schemas.GeospatialRecordOut])
 async def get_locations_by_coordinates(
-        coordinates: schemas.LocationSearch,
+        coordinates: schemas.LocationBase,
         db: Session = Depends(get_db)
 ) -> Any:
 
@@ -53,7 +96,6 @@ async def get_locations_by_coordinates(
         db,
         coordinates.lat,
         coordinates.lng,
-        coordinates.zoom
     )
 
     print(f"Markers : {len(markers)}")
@@ -64,7 +106,10 @@ async def get_locations_by_coordinates(
 @router.get('/location-info', response_model=schemas.LocationOut)
 async def get_location_info(location_id: int, db: Session = Depends(get_db)) -> Any:
 
-    location = crud.get_location_by_id(db, location_id)
+    location = locations.get(
+        db=db,
+        model_id=location_id
+    )
 
     if not location:
         raise HTTPException(status_code=400, detail="Not found")
@@ -80,9 +125,9 @@ async def get_location_changelogs(location_id: int, db: Session = Depends(get_db
     return logs
 
 
-@router.post('/request-info')
+@router.post('/request-info', response_model=schemas.LocationOut)
 async def request_location_review(
-        location: schemas.LocationCreate,
+        location: schemas.LocationBase,
         db: Session = Depends(get_db)
 ) -> Any:
 
@@ -93,40 +138,45 @@ async def request_location_review(
             detail="Review request for this location was already sent"
         )
 
-    address = geocoding.reverse(location.lat, location.lng)
-    if not address:
-        raise HTTPException(status_code=400, detail="Cannot get the address of this location, please check you query")
-
     restricted_intersection = zone_crud.check_new_point_intersections(db, location.lng, location.lat)
     if restricted_intersection:
-        raise HTTPException(status_code=403, detail="Locations in this area are restricted")
+        raise HTTPException(
+            status_code=403,
+            detail="Locations in this area are restricted"
+        )
 
-    location_to_review = crud.create_location_review_request(
-        db,
-        address=address,
-        lat=location.lat,
-        lng=location.lng
+    address = geocoding.reverse(location.lat, location.lng)
+    if not address:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot get the address of this location, please check you query"
+        )
+
+    new_location = locations.create_request(
+        db=db,
+        location=schemas.LocationRequest(
+            **location.dict(),
+            **address,
+        )
     )
-    if not location_to_review:
-        raise HTTPException(status_code=500, detail="Cannot connect to the database, please try again")
 
-    return location_to_review.to_json()
+    geo_index = geospatial_index.create(
+        db=db,
+        obj_in=schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
+    )
 
+    return new_location.to_json()
 
-# @router.post('/request-info')
-# async def request_location_review(location: schemas.LocationCreate, db: Session = Depends(get_db)) -> Any:
-#
-#     existing_location = crud.get_location_by_coordinates(db, location.lat, location.lng)
-#
-#     if existing_location:
-#         raise HTTPException(status_code=400, detail="Review request for this location was already sent")
-#
-#     location_to_review = crud.create_location_review_request(db, obj_in=location)
-#
-#     if not location_to_review:
-#         raise HTTPException(status_code=500, detail="Cannot connect to the database, please try again")
-#
-#     return location_to_review.to_json()
+    # location_to_review = crud.create_location_review_request(
+    #     db,
+    #     address=address,
+    #     lat=location.lat,
+    #     lng=location.lng
+    # )
+    # if not location_to_review:
+    #     raise HTTPException(status_code=500, detail="Cannot connect to the database, please try again")
+    #
+    # return location_to_review.to_json()
 
 
 @router.get('/pending-count')
@@ -208,10 +258,16 @@ async def remove_location(location_id: int,
                                                                scopes=['locations:delete'])) -> Any:
 
     # TODO place to archive?
-    location = crud.delete_location(db, location_id=location_id)
+    location = locations.delete(
+        db=db,
+        model_id=location_id
+    )
 
     if location:
-        raise HTTPException(status_code=400, detail='Cannot perform such operation')
+        raise HTTPException(
+            status_code=400,
+            detail='Cannot perform such operation'
+        )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -229,7 +285,6 @@ async def get_activity_feed(
 
 @router.post('/bulk-add')
 async def bulk_add_locations(
-    sheet_type: int,
     file: UploadFile = File(...),
     # current_user: models.User = Security(get_current_active_user,
     #                                      scopes=['locations:delete'])
@@ -251,22 +306,6 @@ async def bulk_add_locations(
     os.remove(filepath)
 
     return locations
-
-    # filepath = f"app/datasets/{file.filename}"
-    #
-    # if not os.path.exists('app/datasets'):
-    #     os.makedirs('app/datasets')
-    #
-    # async with aiofiles.open(filepath, "wb") as file_object:
-    #     content = await file.read()
-    #     await file_object.write(content)
-    #
-    # op_status = bulk_create(spreadsheet_path=filepath, sheet_type=sheet_type)
-    #
-    # if not op_status:
-    #     raise HTTPException(status_code=400, detail=op_status)
-    #
-    # return Response(status_code=status.HTTP_201_CREATED)
 
 
 # TODO REMOVE ENDPOINT ( TESTING ONLY )

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -7,7 +7,7 @@ from app import schemas
 from app.crud.base import CRUDBase
 
 
-class CRUDScopes(CRUDBase[OauthScope, schemas.OauthScope]):
+class CRUDScopes(CRUDBase[OauthScope, schemas.OauthScope, schemas.OauthScope]):
 
     def get_or_create_scope(
             self,
@@ -40,7 +40,7 @@ class CRUDScopes(CRUDBase[OauthScope, schemas.OauthScope]):
         return db.query(self.model).filter(self.model.id.in_(ids)).all()
 
 
-class CRUDRoles(CRUDBase[OauthRole, schemas.OauthRole]):
+class CRUDRoles(CRUDBase[OauthRole, schemas.OauthRoleCreate, schemas.OauthRoleCreate]):
 
     def get_or_create_role(
             self,
@@ -49,7 +49,6 @@ class CRUDRoles(CRUDBase[OauthRole, schemas.OauthRole]):
             role: schemas.OauthRole,
             scope_list: List[OauthScope]
     ) -> OauthRole:
-
         existing_role = self.get_role_by_name(db, role_name=role.verbose_name)
         if existing_role:
             return existing_role
@@ -70,6 +69,21 @@ class CRUDRoles(CRUDBase[OauthRole, schemas.OauthRole]):
             role_name: str
     ) -> OauthRole:
         return db.query(self.model).filter(self.model.verbose_name == role_name).first()
+
+    def patch(
+            self,
+            db: Session,
+            *,
+            role: OauthRole,
+            scope_list: List[OauthScope],
+            name: str = None,
+    ) -> Optional[OauthRole]:
+
+        role.verbose_name = name if name else role.verbose_name
+        role.scopes = scope_list
+        db.commit()
+        db.refresh(role)
+        return role
 
 
 scopes = CRUDScopes(OauthScope)

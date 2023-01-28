@@ -8,7 +8,39 @@ from app.models.location import Location
 from app.crud import crud_geospatial as geo_crud
 from app.crud import crud_location as location_crud
 from app.core.config import settings
+from app.crud.crud_location import locations
 from app.utils.populate_db import populate_reports
+
+
+def test_add_new_location(
+        client: TestClient,
+        test_db: Session,
+        superuser_token_headers: Dict[str, str],
+) -> None:
+
+    payload = {
+        "lat": "49.2363517942551",
+        "lng": "28.46728473547535",
+        "street_number": "Test street",
+        "address": "Test address",
+        "city": "Test city",
+        "country": "Ukraine",
+        "index": 21000,
+        "reports": populate_reports()
+    }
+
+    r = client.post(
+        f"{settings.API_V1_STR}/locations/add",
+        json=payload,
+        headers=superuser_token_headers
+    )
+    assert 200 <= r.status_code < 300
+    added_location = r.json()
+    location = locations.get(db=test_db, model_id=added_location["id"])
+    assert location.status == 3
+    assert added_location['address'] == location.address
+    geo_record = geo_crud.search_index_by_location_id(test_db, location_id=location.id)
+    assert geo_record.geohash
 
 
 def test_request_location_info(
@@ -21,7 +53,7 @@ def test_request_location_info(
     assert 200 <= r.status_code < 300
 
     requested_location = r.json()
-    location = location_crud.get_location_by_id(test_db, location_id=requested_location['id'])
+    location = locations.get(db=test_db, model_id=requested_location["id"])
     assert location.status == 1
     assert requested_location['address'] == location.address
     geospatial_record = geo_crud.search_index_by_location_id(test_db, location_id=location.id)

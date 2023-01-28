@@ -1,47 +1,84 @@
 from typing import List, Any, Optional, Dict
 from datetime import datetime, timedelta
+import logging
 
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from fastapi import HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from app.crud.crud_changelogs import create_changelog
 from app.crud.crud_geospatial import create_index
 from app.models.location import Location
 from app.models.user import User
 from app.models.geospatial_index import GeospatialIndex
-from app.schemas.location import LocationCreate, LocationReports
-from app.utils.populate_db import populate_reports
+from app.schemas.location import LocationReports
 from app.core.config import settings
+from app.crud.base import CRUDBase
+from app import schemas
+
+logger = logging.getLogger(settings.PROJECT_NAME)
 
 
-def create_location(db: Session, *, obj_in: LocationCreate) -> Location:
+class CRUDLocation(CRUDBase[Location, schemas.LocationCreate, schemas.LocationReports]):
 
-    try:
-        db_obj = Location(
-            address=obj_in.address,
-            index=obj_in.index,
-            lat=obj_in.lat,
-            lng=obj_in.lng,
-            country=obj_in.country,
-            city=obj_in.city,
-            status=3,
-            reports=populate_reports()
-        )
+    def create_new_location(
+            self,
+            db: Session,
+            *,
+            location: schemas.LocationCreate,
+            reported_by: User
+    ) -> Location:
 
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        try:
+            db_obj = self.model(**(jsonable_encoder(location)))
+            db_obj.status = 3
+            db_obj.reported_by = reported_by.id
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
 
-        for i in range(3):
-            submit_location_reports(db, obj_in=LocationReports(location_id=db_obj.id, **populate_reports()), user_id=12)
+        except Exception as e:
+            logger.error('Cannot add a new location. Error: {}, Payload: {}'.format(e, location))
+            raise HTTPException(
+                status_code=500,
+                detail="Cannot add a new location at the moment."
+            )
 
-        index = create_index(db, location_id=db_obj.id, lat=obj_in.lat, lng=obj_in.lng, status=db_obj.status)
+        return db_obj
 
-        return db.query(Location).get(db_obj.id)
+    def create_request(
+            self,
+            db: Session,
+            *,
+            location: schemas.LocationRequest
+    ) -> Location:
 
-    except Exception as e:
-        print(e)
-        return None
+        try:
+            db_obj = self.model(**(jsonable_encoder(location)))
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
+
+        except Exception as e:
+            logger.error('Cannot add a new location. Error: {}, Payload: {}'.format(e, location))
+            raise HTTPException(
+                status_code=500,
+                detail="Cannot add a new location at the moment."
+            )
+
+        return db_obj
+
+    def get_location_by_coordinates(
+            self,
+            db: Session,
+            lat: float,
+            lng: float
+    ) -> Location:
+        return db.query(self.model).filter(self.model.lat == lat, self.model.lng == lng).first()
+
+
+locations = CRUDLocation(Location)
 
 
 def create_location_review_request(
@@ -78,36 +115,6 @@ def create_location_review_request(
         return None
 
 
-# def create_location_review_request(db: Session, *, obj_in: LocationCreate) -> Optional[Location]:
-#
-#     try:
-#         db_obj = Location(
-#             address=obj_in.address,
-#             index=obj_in.index,
-#             lat=obj_in.lat,
-#             lng=obj_in.lng,
-#             status=1,
-#             country=obj_in.country,
-#             city=obj_in.city,
-#         )
-#
-#         db.add(db_obj)
-#         db.commit()
-#         db.refresh(db_obj)
-#
-#         index = create_index(db, location_id=db_obj.id, lat=obj_in.lat, lng=obj_in.lng, status=db_obj.status)
-#
-#         return db_obj
-#
-#     except Exception as e:
-#         print(e)
-#         return None
-
-
-def get_location_by_id(db: Session, location_id: int) -> Location:
-    return db.query(Location).get(location_id)
-
-
 def get_location_by_coordinates(db: Session, lat: float, lng: float) -> Location:
     return db.query(Location).filter(Location.lat == lat, Location.lng == lng).first()
 
@@ -121,10 +128,6 @@ def get_locations_awaiting_reports(db: Session, limit: int = 20, skip: int = 0) 
         .order_by(desc(Location.created_at))\
         .limit(limit)\
         .offset(skip * limit).all()
-
-
-def get_all_locations(db: Session) -> List[Location]:
-    return db.query(Location).all()
 
 
 def assign_report(db: Session, user_id: int, location_id: int) -> Optional[Location]:
@@ -286,15 +289,6 @@ def bulk_insert_locations(
         "added": added_locations,
         "unprocessed": exceptions
     }
-
-
-def delete_location(db: Session, location_id: int) -> Optional[Location]:
-
-    location = get_location_by_id(db, location_id=location_id)
-
-    db.delete(location)
-    db.commit()
-    return get_location_by_id(db, location_id=location_id)
 
 
 def drop_locations(db: Session):

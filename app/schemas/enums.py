@@ -41,3 +41,8 @@ class HospitalEnum(BasicEnum):
     open = "open"
     closed = "closed"
     no_data = "no_data"
+
+
+class GeocoderEnum(BasicEnum):
+    gmaps = "gmaps"
+    osm = "osm"

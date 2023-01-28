@@ -3,7 +3,12 @@ from sqlalchemy import desc
 from app.models.changelog import ChangeLog
 
 
-def create_changelog(db: Session, location_id: int, old_object: dict, new_object: dict):
+def create_changelog(
+        db: Session,
+        location_id: int,
+        old_object: dict,
+        new_object: dict
+) -> ChangeLog:
 
     changelog = ChangeLog(
         location_id=location_id,

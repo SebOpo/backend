@@ -22,7 +22,7 @@ info about that address than Google.
 Currently , we use Google for geocoding and OSM for reverse geocoding.
 """
 
-geocoder = Nominatim(user_agent="GetLoc")
+osm_geocoder = Nominatim(user_agent="GetLoc")
 gmaps_geocoder = GoogleV3(api_key=settings.GMAPS_APIKEY)
 
 
@@ -52,7 +52,8 @@ def geocode_address(
 
 def reverse(
         lat: float,
-        lng: float
+        lng: float,
+        geocoding_service: str = "osm"
 ) -> Optional[Dict]:
 
     """
@@ -61,6 +62,7 @@ def reverse(
 
     :param float lat: Latitude of an address
     :param float lng: Longitude of an address
+    :param geocoding_service: the abbreviation for the geocoder to use
     :return: Address object from the chosen provider
     Example : {
         'house_number': '64',
@@ -77,6 +79,15 @@ def reverse(
     }
 
     """
+    # TODO ADD GMAPS geocoder support
+    if geocoding_service == "osm":
+        geocoder = osm_geocoder
+    elif geocoding_service == "gmaps":
+        # Those options do not really affect anything because the support for gmaps geocoder is still in dev.
+        # This is hardcoded so frontend does not encounter any errors.
+        geocoder = osm_geocoder
+    else:
+        geocoder = osm_geocoder
 
     try:
         address = geocoder.reverse('{}, {}'.format(lat, lng))

@@ -13,6 +13,7 @@ from app.crud import crud_basic_user as crud
 from app.core.config import settings
 from app import schemas
 from app.crud import crud_location as location_crud
+from app.crud.crud_location import locations
 from app.crud import crud_zones as zone_crud
 from app.utils import geocoding
 from app.utils.time_utils import utc_convert

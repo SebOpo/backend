@@ -31,8 +31,6 @@ def check_new_point_intersections(db: Session, lng: float, lat: float) -> bool:
     try:
         restricted_zones = db.query(Zone).all()
 
-        print(len(restricted_zones))
-
         for zone in restricted_zones:
             zone_geom = wkt.loads(zone.bounding_box)
             intersection = check_intersection(zone_geom, (lng, lat))

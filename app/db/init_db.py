@@ -13,7 +13,8 @@ AID_WORKER_SCOPES = [
     "users:me",
     "users:edit",
     "locations:view",
-    "locations:edit"
+    "locations:edit",
+    "locations:create"
 ]
 
 
@@ -47,13 +48,17 @@ def init_db(db: Session) -> User:
         )
         aid_worker_scopes.append(scope)
 
-    roles.get_or_create_role(
+    aid_worker_role = roles.get_or_create_role(
         db=db,
         role=schemas.OauthRole(
             verbose_name="aid_worker",
         ),
         scope_list=aid_worker_scopes
     )
+
+    # TODO refactor this.
+    aid_worker_role.scopes = aid_worker_scopes
+    db.commit()
 
     # creating the "DIM" organization
     organization = org_crud.get_by_name(db, "DIM")

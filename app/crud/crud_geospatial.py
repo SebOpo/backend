@@ -1,13 +1,49 @@
-from typing import List, Any, Optional
+from typing import List
 
 from sqlalchemy.orm import Session
 
 import pygeohash as pgh
 
 from app.models import GeospatialIndex
+from app import schemas
+from app.crud.base import CRUDBase
 
 
-def create_index(db: Session, location_id: int, lat: float, lng: float, status: int) -> GeospatialIndex:
+class CRUDGeospatial(CRUDBase[GeospatialIndex, schemas.GeospatialRecordCreate, schemas.GeospatialRecord]):
+
+    def search_indexes_in_range(
+            self,
+            db: Session,
+            lat: float,
+            lng: float
+    ) -> List[GeospatialIndex]:
+
+        # You can check the link below to understand the precision levels, for instance 2 is ≤ 1,250km X 625km
+        # https://docs.quadrant.io/quadrant-geohash-algorithm
+
+        geohash = pgh.encode(lat, lng, 2)
+        query = "{}%".format(geohash)
+
+        return db.query(self.model).filter(self.model.geohash.like(query)).all()
+
+    def search_index_by_location_id(
+            self,
+            db: Session,
+            location_id: int
+    ) -> GeospatialIndex:
+        return db.query(self.model).filter(self.model.location_id == location_id).first()
+
+
+geospatial_index = CRUDGeospatial(GeospatialIndex)
+
+
+def create_index(
+        db: Session,
+        location_id: int,
+        lat: float,
+        lng: float,
+        status: int
+) -> GeospatialIndex:
 
     db_obj = GeospatialIndex(
         location_id=location_id,
@@ -26,7 +62,11 @@ def create_index(db: Session, location_id: int, lat: float, lng: float, status: 
     return db_obj
 
 
-def search_indexes_in_range(db: Session, lat: float, lng: float, zoom: int = 6) -> List[GeospatialIndex]:
+def search_indexes_in_range(
+        db: Session,
+        lat: float,
+        lng: float
+) -> List[GeospatialIndex]:
 
     # Use zoom as precision points?
     # TODO check google api
@@ -34,15 +74,15 @@ def search_indexes_in_range(db: Session, lat: float, lng: float, zoom: int = 6) 
     # You can check the link below to understand the precision levels, for instance 2 is ≤ 1,250km X 625km
     # https://docs.quadrant.io/quadrant-geohash-algorithm
     geohash = pgh.encode(lat, lng, 2)
-
-    # print(f"Geohash : {geohash}")
     query = "{}%".format(geohash)
-    # print(f"Query : {query}")
 
     return db.query(GeospatialIndex).filter(GeospatialIndex.geohash.like(query)).all()
 
 
-def search_index_by_location_id(db: Session, location_id: int) -> GeospatialIndex:
+def search_index_by_location_id(
+        db: Session,
+        location_id: int
+) -> GeospatialIndex:
     return db.query(GeospatialIndex).filter(GeospatialIndex.location_id == location_id).first()
 
 

@@ -11,6 +11,7 @@ default_scopes = {
     "users:delete",
     "users:roles",
     "locations:view",
+    "locations:create",
     "locations:edit",
     "locations:delete",
     "organizations:create",

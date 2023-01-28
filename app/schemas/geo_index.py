@@ -1,16 +1,40 @@
 from typing import Dict, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, root_validator
+import pygeohash as pgh
 
 
 class GeospatialRecord(BaseModel):
-
-    id: int
-    location_id: int
     lat: float
     lng: float
-    position: Optional[Dict]
     status: int
+    location_id: int
+
+
+class GeospatialRecordCreate(GeospatialRecord):
+    geohash: str
+
+    @root_validator(pre=True)
+    def convert_id(cls, values):
+        """
+        Because we do not create any geospatial indexes explicitly, it is easier to pass a mapping of a newly created
+        location to this schema is a mapping. Because the mapped location os an orm object, its location id is just an
+        "id" of the location model. We convert it here to correctly pass it to the create method.
+        :param values: Initial passed values
+        :return: the converted and ready to create payload.
+        """
+        values['location_id'] = values['id']
+        return values
+
+    @root_validator(pre=True)
+    def make_geohash(cls, values):
+        values['geohash'] = pgh.encode(values['lat'], values['lng'], 12)
+        return values
+
+
+class GeospatialRecordOut(GeospatialRecord):
+    id: int
+    position: Optional[Dict]
 
     @validator('position', pre=True, always=True)
     def set_position(cls, v: Dict, values: Dict):

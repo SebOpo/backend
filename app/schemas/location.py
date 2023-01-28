@@ -1,33 +1,41 @@
 from typing import Optional, Dict
+from typing_extensions import TypedDict
 from datetime import datetime
 
 from pydantic import BaseModel, validator
 
-from app.schemas import report
+from app.schemas import report, geocoding
 from app.schemas.validators import convert_to_utc
 
 # TODO LocationOut class with typed dict position (check to_json location method)
 
 
 class LocationBase(BaseModel):
-    address: Optional[str] = None
-    street_number: Optional[str] = None
-    city: Optional[str] = None
-    country: Optional[str] = None
-    index: Optional[int] = None
-    lat: Optional[float] = None
-    lng: Optional[float] = None
+    lat: float
+    lng: float
+
+
+class Reports(TypedDict):
+    buildingCondition: report.BuildingReport
+    electricity: report.ElectricityReport
+    carEntrance: report.CarEntranceReport
+    water: report.WaterReport
+    fuelStation: report.FuelStationReport
+    hospital: report.HospitalReport
 
 
 class LocationCreate(LocationBase):
-    lat: float
-    lng: float
+    street_number: str
+    address: str
+    city: str
+    country: str
+    index: int
+    reports: Reports
 
 
-class LocationSearch(BaseModel):
-    lat: float
-    lng: float
-    zoom: Optional[int]
+class LocationRequest(LocationBase, geocoding.OSMGeocodingResults):
+    status: int = 1
+    requested_by: int = None
 
 
 class LocationOut(BaseModel):
