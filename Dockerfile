@@ -1,8 +1,8 @@
 FROM --platform=linux/amd64 python:3.8
 WORKDIR /src
 
+# Update and install dependencies
 RUN apt-get update && pip install --upgrade pip
-
 COPY ./requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -14,6 +14,5 @@ COPY populate_db.py \
     app \
     ./
 
-
 EXPOSE 7000
-CMD ["/bin/sh", "-c", "/src/startup.sh" ]
+CMD ["./startup.sh"]
