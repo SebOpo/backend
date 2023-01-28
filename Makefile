@@ -9,8 +9,14 @@ down:
 build:
 	docker-compose build
 
+test:
+	docker-compose run fastapi  python -m pytest
+
+exec:
+	docker-compose exec fastapi bash
 
 # convenience targets
 b: build
 u: up
 d: down
+e: exec
