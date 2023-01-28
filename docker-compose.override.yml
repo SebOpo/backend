@@ -24,3 +24,19 @@ services:
     depends_on:
       pgdatabase:
         condition: service_healthy
+
+  black:
+    profiles:
+      - dev
+      - black
+    # Uncompromising code formatter
+    # To integrate with IDE check: https://black.readthedocs.io/en/stable/integrations/editors.html
+    build:
+      context: .
+      dockerfile: black/Dockerfile
+
+    ports:
+      - "45484:45484"
+
+    volumes:
+      - ./:/app
