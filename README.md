@@ -10,13 +10,16 @@ Project installation
 Project uses `Makefile` to keep useful scripts in one place. You can join commands with `&&` to run them in one line.
 ex: `make && make exec`.
 
-- Create a new file:
- 
+- Create a `.env` new file:
 `.env` in the root folder of the project and fill it out the same as `.env.example`
-
+- Initialize and check if tests are passing:
+```
+make pre-start
+```
 - Start the project:
-
-`make`
+```
+make
+```
 
 Update DB models
 ---------------------------------

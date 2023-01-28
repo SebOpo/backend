@@ -15,6 +15,8 @@ test:
 exec:
 	docker-compose exec fastapi bash
 
+pre-start: up test down
+
 # convenience targets
 b: build
 u: up
