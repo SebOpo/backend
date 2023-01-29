@@ -1,14 +1,14 @@
-from typing import Optional
 from datetime import datetime, timedelta
+from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.core.security import get_password_hash, verify_password, create_access_token
 from app.components.user.models import User
-from app.models.organization import Organization
 from app.components.user.schemas import UserCreate, UserBase, UserInvite
 from app.core.config import settings
+from app.core.security import get_password_hash, verify_password, create_access_token
 from app.crud.crud_oauth import roles
+from app.models.organization import Organization
 
 
 def get_by_email(db: Session, *, email: str) -> Optional[User]:
