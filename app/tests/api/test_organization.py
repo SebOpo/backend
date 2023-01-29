@@ -24,9 +24,7 @@ def test_create_organization(
 
     created_organization = r.json()
     assert created_organization
-    organization = userc.crud.get_by_id(
-        test_db, organization_id=created_organization["id"]
-    )
+    organization = crud.get_by_id(test_db, organization_id=created_organization["id"])
     assert organization.name == created_organization["name"]
 
 
