@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth
 from app.api.v1.endpoints import geocoding
 from app.api.v1.endpoints import guest_user
 from app.api.v1.endpoints import locations
@@ -8,6 +7,7 @@ from app.api.v1.endpoints import oauth
 from app.api.v1.endpoints import organizations
 from app.api.v1.endpoints import sessions
 from app.api.v1.endpoints import zones
+from app.components.auth import routes as auth
 from app.components.user import routes as user
 
 api_router = APIRouter()

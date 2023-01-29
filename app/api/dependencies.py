@@ -7,8 +7,7 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from app import schemas
-
+from app.components import auth
 # TODO: Find a better name
 from app.components import user as userc
 from app.core import security
@@ -53,7 +52,7 @@ def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
-        token_data = schemas.TokenBase(**payload)
+        token_data = auth.schemas.TokenBase(**payload)
 
     except (jwt.JWTError, ValidationError) as e:
         print(e)

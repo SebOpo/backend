@@ -23,6 +23,4 @@ from .organization import OrganizationBase, OrganizationOut, OrganizationUserInv
 from .roles import UserRole
 from .session import UserSession
 from .session import UserSession
-from .token import Token, TokenBase
-from .token import Token, TokenBase
 from .zone import ZoneBase
