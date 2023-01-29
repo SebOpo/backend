@@ -1,13 +1,12 @@
 from sqlalchemy.orm import Session
 
-from app.crud import crud_organizations as org_crud
-from app.core.config import settings
-from app.models import oauth
-from app.crud.crud_oauth import scopes, roles
-
+from app import schemas
 # TODO: find a better name
 from app.components import user as userc
-from app import schemas
+from app.core.config import settings
+from app.crud import crud_organizations as org_crud
+from app.crud.crud_oauth import scopes, roles
+from app.models import oauth
 
 AID_WORKER_SCOPES = [
     "users:me",
@@ -62,11 +61,11 @@ def init_db(db: Session) -> userc.models.User:
     # creating first superuser
     user = userc.crud.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
-        new_user = user.schemas.UserCreate(
+        new_user = userc.schemas.UserCreate(
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             organization=organization.id,
         )
-        user = user.crud.create(db, obj_in=new_user, role="platform_administrator")
+        user = userc.crud.create(db, obj_in=new_user, role="platform_administrator")
 
     return user
