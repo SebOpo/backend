@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  fastapi:
+    volumes:
+      - ./:/src
+
+  pgadmin:
+    profiles:
+      - dev
+      - pgadmin
+
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    platform: linux/amd64
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@projectdim.org
+      PGADMIN_DEFAULT_PASSWORD: dim
+
+    ports:
+      - "5050:80"
+
+    restart: always
+    depends_on:
+      pgdatabase:
+        condition: service_healthy
+
+  black:
+    profiles:
+      - dev
+      - black
+    # Uncompromising code formatter
+    # To integrate with IDE check: https://black.readthedocs.io/en/stable/integrations/editors.html
+    build:
+      context: .
+      dockerfile: black/Dockerfile
+
+    ports:
+      - "45484:45484"
+
+    volumes:
+      - ./:/app
