@@ -10,3 +10,20 @@ from app.models.geospatial_index import GeospatialIndex
 from app.models.zone import Zone
 from app.models.guest_user import GuestUser
 from app.models.oauth import OauthScope, OauthRole, association_table
+
+__all__ = [
+    "Base",
+    "Location",
+    "Report",
+    "ReportOption",
+    "ChangeLog",
+    "User",
+    "SessionHistory",
+    "Organization",
+    "GeospatialIndex",
+    "Zone",
+    "GuestUser",
+    "OauthScope",
+    "OauthRole",
+    "association_table",
+]
