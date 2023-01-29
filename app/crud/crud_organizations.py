@@ -4,16 +4,14 @@ from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.models.organization import Organization
-from app.models.user import User
-from app.schemas.organization import OrganizationBase, OrganizationUserInvite
+from app.components.user.models import User
+from app.schemas.organization import OrganizationBase
 
 
 def create(db: Session, *, obj_in: OrganizationBase) -> Organization:
 
     db_obj = Organization(
-        name=obj_in.name,
-        website=obj_in.website,
-        description=obj_in.description
+        name=obj_in.name, website=obj_in.website, description=obj_in.description
     )
 
     db.add(db_obj)
@@ -31,16 +29,28 @@ def get_by_name(db: Session, name: str) -> Optional[Organization]:
 
 
 def get_by_substr(db: Session, name: str) -> List[Organization]:
-    return db.query(Organization).filter(func.lower(Organization.name).startswith(name)).all()
+    return (
+        db.query(Organization)
+        .filter(func.lower(Organization.name).startswith(name))
+        .all()
+    )
 
 
-def get_organizations_list(db: Session, limit: int = 20, skip: int = 0) -> List[Organization]:
-    return db.query(Organization).order_by(desc(Organization.created_at))\
-        .limit(limit)\
-        .offset(skip * limit).all()
+def get_organizations_list(
+    db: Session, limit: int = 20, skip: int = 0
+) -> List[Organization]:
+    return (
+        db.query(Organization)
+        .order_by(desc(Organization.created_at))
+        .limit(limit)
+        .offset(skip * limit)
+        .all()
+    )
 
 
-def edit_organization(db: Session, organization_id: int, obj_in: OrganizationBase) -> Optional[Organization]:
+def edit_organization(
+    db: Session, organization_id: int, obj_in: OrganizationBase
+) -> Optional[Organization]:
 
     organization = get_by_id(db, organization_id=organization_id)
     if not organization:
@@ -57,16 +67,20 @@ def edit_organization(db: Session, organization_id: int, obj_in: OrganizationBas
     return organization
 
 
-def add_members(db: Session, organization_id: int, user_emails: List[str]) -> Organization:
+def add_members(
+    db: Session, organization_id: int, user_emails: List[str]
+) -> Organization:
 
     # TODO refactor this!
 
     for user in user_emails:
-        db_user = db.query(User).filter(
-            User.email == user,
-            User.email_confirmed == True,
-            User.is_active == True
-        ).first()
+        db_user = (
+            db.query(User)
+            .filter(
+                User.email == user, User.email_confirmed == True, User.is_active == True
+            )
+            .first()
+        )
         if not db_user:
             continue
 
@@ -77,7 +91,9 @@ def add_members(db: Session, organization_id: int, user_emails: List[str]) -> Or
     return get_by_id(db, organization_id=organization_id)
 
 
-def remove_members(db: Session, organization_id: int, user_id: int) -> Optional[Organization]:
+def remove_members(
+    db: Session, organization_id: int, user_id: int
+) -> Optional[Organization]:
 
     db_user = db.query(User).get(user_id)
     if not db_user or not db_user.organization:
