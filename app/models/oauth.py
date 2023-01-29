@@ -24,7 +24,7 @@ default_scopes = {
     "oauth:delete",
     "zones:create",
     "zones:edit",
-    "zones:get"
+    "zones:get",
 }
 
 
@@ -32,7 +32,7 @@ association_table = Table(
     "role_scopes",
     Base.metadata,
     Column("role_id", ForeignKey("OauthRole.id"), primary_key=True),
-    Column("scope_id", ForeignKey("OauthScope.id"), primary_key=True)
+    Column("scope_id", ForeignKey("OauthScope.id"), primary_key=True),
 )
 
 

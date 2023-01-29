@@ -1,5 +1,5 @@
-from typing import Optional, List
 import datetime
+from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr, validator
 
@@ -18,7 +18,7 @@ class OrganizationOut(OrganizationBase):
     created_at: datetime.datetime
     participants: Optional[List[UserRepresentation]]
 
-    _utc_created_at = validator('created_at', allow_reuse=True)(convert_to_utc)
+    _utc_created_at = validator("created_at", allow_reuse=True)(convert_to_utc)
 
     class Config:
         orm_mode = True

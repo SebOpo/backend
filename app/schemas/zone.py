@@ -1,5 +1,3 @@
-
-
 from pydantic import BaseModel
 
 
@@ -11,4 +9,3 @@ class ZoneBase(BaseModel):
 class ZoneOut(ZoneBase):
     id: int
     bounding_box: str
-    

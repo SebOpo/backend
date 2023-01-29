@@ -1,5 +1,5 @@
-from sqlalchemy.sql import expression
 from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.sql import expression
 from sqlalchemy.types import DateTime
 
 
@@ -8,11 +8,11 @@ class utcnow(expression.FunctionElement):
     inherit_cache = True
 
 
-@compiles(utcnow, 'postgresql')
+@compiles(utcnow, "postgresql")
 def pg_utcnow(element, compiler, **kw):
     return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
 
 
-@compiles(utcnow, 'mssql')
+@compiles(utcnow, "mssql")
 def ms_utcnow(element, compiler, **kw):
     return "GETUTCDATE()"

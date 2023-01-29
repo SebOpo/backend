@@ -1,8 +1,7 @@
 import os
 
-from pydantic import BaseModel
 from dotenv import load_dotenv
-
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -26,7 +25,7 @@ class LogConfig(BaseModel):
         "default": {
             "formatter": "default",
             "class": "logging.StreamHandler",
-            "stream": "ext://sys.stderr"
+            "stream": "ext://sys.stderr",
         },
     }
     loggers = {

@@ -1,21 +1,18 @@
 from typing import List
 
+import pygeohash as pgh
 from sqlalchemy.orm import Session
 
-import pygeohash as pgh
-
-from app.models import GeospatialIndex
 from app import schemas
 from app.crud.base import CRUDBase
+from app.models import GeospatialIndex
 
 
-class CRUDGeospatial(CRUDBase[GeospatialIndex, schemas.GeospatialRecordCreate, schemas.GeospatialRecord]):
-
+class CRUDGeospatial(
+    CRUDBase[GeospatialIndex, schemas.GeospatialRecordCreate, schemas.GeospatialRecord]
+):
     def search_indexes_in_range(
-            self,
-            db: Session,
-            lat: float,
-            lng: float
+        self, db: Session, lat: float, lng: float
     ) -> List[GeospatialIndex]:
 
         # You can check the link below to understand the precision levels, for instance 2 is ≤ 1,250km X 625km
@@ -27,22 +24,18 @@ class CRUDGeospatial(CRUDBase[GeospatialIndex, schemas.GeospatialRecordCreate, s
         return db.query(self.model).filter(self.model.geohash.like(query)).all()
 
     def search_index_by_location_id(
-            self,
-            db: Session,
-            location_id: int
+        self, db: Session, location_id: int
     ) -> GeospatialIndex:
-        return db.query(self.model).filter(self.model.location_id == location_id).first()
+        return (
+            db.query(self.model).filter(self.model.location_id == location_id).first()
+        )
 
 
 geospatial_index = CRUDGeospatial(GeospatialIndex)
 
 
 def create_index(
-        db: Session,
-        location_id: int,
-        lat: float,
-        lng: float,
-        status: int
+    db: Session, location_id: int, lat: float, lng: float, status: int
 ) -> GeospatialIndex:
 
     db_obj = GeospatialIndex(
@@ -52,7 +45,7 @@ def create_index(
         geohash=pgh.encode(lat, lng, 12),
         lat=lat,
         lng=lng,
-        status=status
+        status=status,
     )
 
     db.add(db_obj)
@@ -63,9 +56,7 @@ def create_index(
 
 
 def search_indexes_in_range(
-        db: Session,
-        lat: float,
-        lng: float
+    db: Session, lat: float, lng: float
 ) -> List[GeospatialIndex]:
 
     # Use zoom as precision points?
@@ -79,10 +70,9 @@ def search_indexes_in_range(
     return db.query(GeospatialIndex).filter(GeospatialIndex.geohash.like(query)).all()
 
 
-def search_index_by_location_id(
-        db: Session,
-        location_id: int
-) -> GeospatialIndex:
-    return db.query(GeospatialIndex).filter(GeospatialIndex.location_id == location_id).first()
-
-
+def search_index_by_location_id(db: Session, location_id: int) -> GeospatialIndex:
+    return (
+        db.query(GeospatialIndex)
+        .filter(GeospatialIndex.location_id == location_id)
+        .first()
+    )

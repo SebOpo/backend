@@ -6,8 +6,7 @@ def return_template(template_type: str, *, link: str = None) -> dict:
     templates = {
         "invite": {
             "subject": "Invitation to the platform.",
-            "html":
-                """
+            "html": """
                 <html>
                     <head></head>
                     <h1>Project DIM invitation.</h1>
@@ -15,13 +14,14 @@ def return_template(template_type: str, *, link: str = None) -> dict:
                     <p>To complete the registration, please follow this <a href='{}'> link </a></p>
                     <p>It will expire in 24 hours.</p>
                 </html>    
-                """.format(settings.DOMAIN_ADDRESS, link),
-            "text": "Project dim invitation."
+                """.format(
+                settings.DOMAIN_ADDRESS, link
+            ),
+            "text": "Project dim invitation.",
         },
         "password-renewal": {
             "subject": "Password renewal.",
-            "html":
-                """
+            "html": """
                 <html>
                     <head></head>
                     <h1>Project DIM password renewal.</h1>
@@ -30,9 +30,11 @@ def return_template(template_type: str, *, link: str = None) -> dict:
                     <p>To reset your password, please follow this <a href='{}'> link </a></p>
                     <p>It will expire in 24 hours.</p>
                 </html>    
-                """.format(settings.DOMAIN_ADDRESS, link),
-            "text": "Project dim password renewal"
-        }
+                """.format(
+                settings.DOMAIN_ADDRESS, link
+            ),
+            "text": "Project dim password renewal",
+        },
     }
 
     return templates.get(template_type, None)

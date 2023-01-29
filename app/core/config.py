@@ -1,11 +1,9 @@
-import secrets
 import os
-
+import secrets
 from typing import List, Optional, Any, Dict
 
-from pydantic import BaseSettings, AnyHttpUrl, PostgresDsn, validator, EmailStr
-
 from dotenv import load_dotenv
+from pydantic import BaseSettings, AnyHttpUrl, PostgresDsn, validator, EmailStr
 
 load_dotenv()
 
@@ -37,7 +35,7 @@ class Settings(BaseSettings):
             user=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
-            path=f"/{values.get('POSTGRES_DB') or ''}"
+            path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
     FIRST_SUPERUSER: EmailStr = os.getenv("SUPERUSER_EMAIL", "admin@admin.com")
@@ -47,13 +45,13 @@ class Settings(BaseSettings):
     TEST_USER_PASSWORD: str = os.getenv("TEST_USER_PASSWORD", "asd112233")
     TEST_USER_PHONE_NUM: str = os.getenv("TEST_USER_PHONENUM", "+380638773140")
 
-    EMAILS_ENABLED: bool = os.getenv('EMAILS_ENABLED', True)
+    EMAILS_ENABLED: bool = os.getenv("EMAILS_ENABLED", True)
     OTP_EXPIRE_MINUTES: int = os.getenv("OTP_EXPIRE_MINUTES", 15)
     OTP_HOUR_RATE_LIMIT: int = os.getenv("OTP_HOUR_RATE_LIMIT", 5)
-    AMAZON_APP_ID: str = os.getenv('AMAZON_APP_ID', "none")
+    AMAZON_APP_ID: str = os.getenv("AMAZON_APP_ID", "none")
     AWS_PROFILE: str = os.getenv("AWS_PROFILE", "dim")
 
-    GMAPS_APIKEY: str = os.getenv('GMAPS_APIKEY', None)
+    GMAPS_APIKEY: str = os.getenv("GMAPS_APIKEY", None)
 
     class Config:
         case_sensitive = True

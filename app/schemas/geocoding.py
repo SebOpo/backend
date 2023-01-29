@@ -7,6 +7,7 @@ class GeocodingResultsBase(BaseModel):
     when searching is such areas, some fields may be blank. This is alright, because we have the functionality to add
     missing fields manually by the aid worker.
     """
+
     street_number: str = None
     address: str = None
     city: str = None
@@ -15,7 +16,6 @@ class GeocodingResultsBase(BaseModel):
 
 
 class OSMGeocodingResults(GeocodingResultsBase):
-
     @root_validator(pre=True)
     def assemble_payload(cls, values):
         """
@@ -26,11 +26,13 @@ class OSMGeocodingResults(GeocodingResultsBase):
         :param values:
         :return:
         """
-        values['street_number'] = values.get('house_number', None)
-        values['address'] = values.get('road', None)
-        values['city'] = values.get('city', values.get('town', values.get('village', None)))
-        values['country'] = values.get('country', None)
-        values['index'] = values.get('postcode', None)
+        values["street_number"] = values.get("house_number", None)
+        values["address"] = values.get("road", None)
+        values["city"] = values.get(
+            "city", values.get("town", values.get("village", None))
+        )
+        values["country"] = values.get("country", None)
+        values["index"] = values.get("postcode", None)
         return values
 
 
@@ -39,5 +41,5 @@ class GMAPSGeocodingResults(GeocodingResultsBase):
 
     @root_validator(pre=True)
     def assemble_payload(cls, values):
-        address_data = values['address_components']
+        address_data = values["address_components"]
         pass

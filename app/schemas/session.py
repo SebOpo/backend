@@ -1,5 +1,5 @@
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, validator
 
@@ -13,7 +13,9 @@ class UserSession(BaseModel):
     user_agent: Optional[str]
     user_ip: Optional[str]
 
-    _utc_datetime = validator('created_at', 'expires_at', allow_reuse=True)(convert_to_utc)
+    _utc_datetime = validator("created_at", "expires_at", allow_reuse=True)(
+        convert_to_utc
+    )
 
     class Config:
         orm_mode = True
