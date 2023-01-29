@@ -1,10 +1,13 @@
-from typing import Optional, List
 import datetime
+from typing import Optional, List, TYPE_CHECKING
 
 from pydantic import BaseModel, EmailStr, validator
 
-from app.components import user as userc
 from app.schemas.validators import convert_to_utc
+
+# TODO: Find a better name
+if TYPE_CHECKING:
+    from app.components import user as userc
 
 
 class OrganizationBase(BaseModel):
@@ -16,7 +19,7 @@ class OrganizationBase(BaseModel):
 class OrganizationOut(OrganizationBase):
     id: int
     created_at: datetime.datetime
-    participants: Optional[List[userc.schemas.UserRepresentation]]
+    participants: Optional[List["userc.schemas.UserRepresentation"]]
 
     _utc_created_at = validator("created_at", allow_reuse=True)(convert_to_utc)
 

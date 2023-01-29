@@ -1,21 +1,21 @@
-from typing import List, Any, Optional, Dict
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import List, Any, Optional, Dict
 
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
-from app.crud.crud_changelogs import create_changelog
-from app.crud.crud_geospatial import create_index
-from app.models.location import Location
+from app import schemas
 from app.components import user as userc
-from app.models.geospatial_index import GeospatialIndex
-from app.schemas.location import LocationReports
 from app.core.config import settings
 from app.crud.base import CRUDBase
-from app import schemas
+from app.crud.crud_changelogs import create_changelog
+from app.crud.crud_geospatial import create_index
+from app.models.geospatial_index import GeospatialIndex
+from app.models.location import Location
+from app.schemas.location import LocationReports
 
 logger = logging.getLogger(settings.PROJECT_NAME)
 
@@ -26,7 +26,7 @@ class CRUDLocation(CRUDBase[Location, schemas.LocationCreate, schemas.LocationRe
         db: Session,
         *,
         location: schemas.LocationCreate,
-        reported_by: userc.schemas.User
+        reported_by: userc.models.User
     ) -> Location:
 
         try:
