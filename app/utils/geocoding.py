@@ -1,11 +1,10 @@
 from typing import Any, Optional, Dict
 
-from geopy.geocoders import GoogleV3, Nominatim
 import osmnx as ox
+from geopy.geocoders import GoogleV3, Nominatim
 from shapely.geometry import Point
 
 from app.core.config import settings
-
 
 """
 We can use either of these providers to get the desired result.
@@ -26,11 +25,7 @@ osm_geocoder = Nominatim(user_agent="GetLoc")
 gmaps_geocoder = GoogleV3(api_key=settings.GMAPS_APIKEY)
 
 
-def geocode_address(
-        address: str,
-        city: str,
-        region: str = 'ua'
-) -> Any:
+def geocode_address(address: str, city: str, region: str = "ua") -> Any:
 
     """
     Takes an address string (can add more precision with city and region) to return its coordinates
@@ -42,7 +37,9 @@ def geocode_address(
     """
 
     try:
-        coordinates = gmaps_geocoder.geocode('{}, {}'.format(address, city), region=region)
+        coordinates = gmaps_geocoder.geocode(
+            "{}, {}".format(address, city), region=region
+        )
         return coordinates
 
     except Exception as e:
@@ -50,11 +47,7 @@ def geocode_address(
         return None
 
 
-def reverse(
-        lat: float,
-        lng: float,
-        geocoding_service: str = "osm"
-) -> Optional[Dict]:
+def reverse(lat: float, lng: float, geocoding_service: str = "osm") -> Optional[Dict]:
 
     """
     Takes the coordinates of a location to return its address information from the chosen provider or None if this info
@@ -90,7 +83,7 @@ def reverse(
         geocoder = osm_geocoder
 
     try:
-        address = geocoder.reverse('{}, {}'.format(lat, lng))
+        address = geocoder.reverse("{}, {}".format(lat, lng))
         return address.raw["address"]
 
     except Exception as e:
@@ -111,17 +104,14 @@ def get_bounding_box_by_region_name(region_name: str):
 
     try:
         gdf = ox.geocode_to_gdf(region_name)
-        geom = gdf.loc[0, 'geometry']
+        geom = gdf.loc[0, "geometry"]
         return geom
 
     except ValueError:
         return None
 
 
-def check_intersection(
-        geom: Any,
-        coords: tuple
-) -> bool:
+def check_intersection(geom: Any, coords: tuple) -> bool:
     """
     This method takes an area represented by a shape and a coordinates point to check if the point is present
     in an area.
@@ -138,4 +128,3 @@ def check_intersection(
     """
 
     return geom.intersects(Point(coords))
-

@@ -1,16 +1,19 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import JSONB
 
 from app.db.base_class import Base
-from app.models.organization import Organization
-
 from app.db.utc_convertation import utcnow
+from app.models.organization import Organization
 
 role_permissions = {
     "aid_worker": ["locations:view", "locations:edit", "users:me", "users:edit"],
-    "platform_administrator": ["locations:view", "locations:delete", "users:create", "users:me", "users:edit"]
+    "platform_administrator": [
+        "locations:view",
+        "locations:delete",
+        "users:create",
+        "users:me",
+        "users:edit",
+    ],
 }
 
 
@@ -40,5 +43,4 @@ class User(Base):
     password_renewal_token = Column(String)
     password_renewal_token_expires = Column(DateTime)
 
-    organization_model = relationship('Organization', viewonly=True)
-
+    organization_model = relationship("Organization", viewonly=True)

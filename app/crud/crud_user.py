@@ -1,14 +1,14 @@
-from typing import Optional
 from datetime import datetime, timedelta
+from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.core.security import get_password_hash, verify_password, create_access_token
-from app.models.user import User
-from app.models.organization import Organization
-from app.schemas.user import UserCreate, UserBase, UserInvite
 from app.core.config import settings
+from app.core.security import get_password_hash, verify_password, create_access_token
 from app.crud.crud_oauth import roles
+from app.models.organization import Organization
+from app.models.user import User
+from app.schemas.user import UserCreate, UserBase, UserInvite
 
 
 def get_by_email(db: Session, *, email: str) -> Optional[User]:
@@ -19,12 +19,7 @@ def get(db: Session, *, user_id: int) -> Optional[User]:
     return db.query(User).get(user_id)
 
 
-def create(
-        db: Session,
-        *,
-        obj_in: UserCreate,
-        role: str
-) -> Optional[User]:
+def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
 
     user_role = roles.get_role_by_name(db, role)
 
@@ -61,8 +56,11 @@ def create_invite(db: Session, *, obj_in: UserInvite) -> Optional[User]:
         organization=db_org.id,
         is_active=False,
         role=user_role.verbose_name,
-        registration_token=create_access_token(subject=obj_in.email, scopes=['users:confirm']),
-        registration_token_expires=datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        registration_token=create_access_token(
+            subject=obj_in.email, scopes=["users:confirm"]
+        ),
+        registration_token_expires=datetime.now()
+        + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
     db.add(db_obj)
@@ -72,7 +70,9 @@ def create_invite(db: Session, *, obj_in: UserInvite) -> Optional[User]:
 
 
 def verify_registration_token(db: Session, access_token: str) -> Optional[User]:
-    invited_user = db.query(User).filter(User.registration_token == access_token).first()
+    invited_user = (
+        db.query(User).filter(User.registration_token == access_token).first()
+    )
 
     if not invited_user or datetime.now() > invited_user.registration_token_expires:
         return None
@@ -80,7 +80,9 @@ def verify_registration_token(db: Session, access_token: str) -> Optional[User]:
     return invited_user
 
 
-def confirm_registration(db: Session, *, access_token: str, obj_in: UserCreate) -> Optional[User]:
+def confirm_registration(
+    db: Session, *, access_token: str, obj_in: UserCreate
+) -> Optional[User]:
 
     invited_user = verify_registration_token(db, access_token)
     if not invited_user:
@@ -111,10 +113,9 @@ def update_info(db: Session, *, obj_in: UserBase, user_email: str) -> User:
     return user
 
 
-def update_password(db: Session,
-                    user_email: str,
-                    old_password: str,
-                    new_password: str) -> Optional[User]:
+def update_password(
+    db: Session, user_email: str, old_password: str, new_password: str
+) -> Optional[User]:
 
     user = authenticate(db, email=user_email, password=old_password)
     if not user:
@@ -126,17 +127,18 @@ def update_password(db: Session,
     return user
 
 
-def reset_password(
-        db: Session,
-        user_email: str
-) -> Optional[User]:
+def reset_password(db: Session, user_email: str) -> Optional[User]:
 
     user = get_by_email(db, email=user_email)
     if not user:
         return None
 
-    user.password_renewal_token = create_access_token(subject=user_email, scopes=['users:me'])
-    user.password_renewal_token_expires = datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    user.password_renewal_token = create_access_token(
+        subject=user_email, scopes=["users:me"]
+    )
+    user.password_renewal_token_expires = datetime.now() + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
 
     db.commit()
     db.refresh(user)
@@ -144,9 +146,7 @@ def reset_password(
 
 
 def confirm_password_reset(
-        db: Session,
-        renewal_token: str,
-        new_password: str
+    db: Session, renewal_token: str, new_password: str
 ) -> Optional[User]:
 
     user = db.query(User).filter(User.password_renewal_token == renewal_token).first()
@@ -163,11 +163,7 @@ def confirm_password_reset(
     return user
 
 
-def change_role(
-        db: Session,
-        user_id: int,
-        role: str
-) -> Optional[User]:
+def change_role(db: Session, user_id: int, role: str) -> Optional[User]:
 
     user = get(db, user_id=user_id)
     if not user:
@@ -185,9 +181,7 @@ def change_role(
     return user
 
 
-def authenticate(
-        db: Session, *, email: str, password: str
-) -> Optional[User]:
+def authenticate(db: Session, *, email: str, password: str) -> Optional[User]:
 
     user = get_by_email(db, email=email)
     if not user:

@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
-from pydantic import BaseModel, validator, root_validator
 import pygeohash as pgh
+from pydantic import BaseModel, validator, root_validator
 
 
 class GeospatialRecord(BaseModel):
@@ -23,12 +23,12 @@ class GeospatialRecordCreate(GeospatialRecord):
         :param values: Initial passed values
         :return: the converted and ready to create payload.
         """
-        values['location_id'] = values['id']
+        values["location_id"] = values["id"]
         return values
 
     @root_validator(pre=True)
     def make_geohash(cls, values):
-        values['geohash'] = pgh.encode(values['lat'], values['lng'], 12)
+        values["geohash"] = pgh.encode(values["lat"], values["lng"], 12)
         return values
 
 
@@ -36,7 +36,7 @@ class GeospatialRecordOut(GeospatialRecord):
     id: int
     position: Optional[Dict]
 
-    @validator('position', pre=True, always=True)
+    @validator("position", pre=True, always=True)
     def set_position(cls, v: Dict, values: Dict):
         """
         The whole reason why this validator exists is to transform the lat and lng values into a format that is
@@ -50,10 +50,7 @@ class GeospatialRecordOut(GeospatialRecord):
         :param values: the values of our pydantic model presented as json dict
         :return:
         """
-        return {
-            "lat": values.get('lat'),
-            "lng": values.get('lng')
-        }
+        return {"lat": values.get("lat"), "lng": values.get("lng")}
 
     class Config:
         orm_mode = True

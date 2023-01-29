@@ -49,7 +49,7 @@ class UserRepresentation(UserBase):
     organization: Optional[int]
     organization_model: Optional[UserOrganizationDetails] = None
 
-    _utc_datetime = validator('last_activity', allow_reuse=True)(convert_to_utc)
+    _utc_datetime = validator("last_activity", allow_reuse=True)(convert_to_utc)
 
     class Config:
         orm_mode = True

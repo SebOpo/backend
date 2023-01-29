@@ -1,11 +1,12 @@
-from typing import Optional, Dict
-from typing_extensions import TypedDict
 from datetime import datetime
+from typing import Optional, Dict
 
 from pydantic import BaseModel, validator
+from typing_extensions import TypedDict
 
 from app.schemas import report, geocoding
 from app.schemas.validators import convert_to_utc
+
 
 # TODO LocationOut class with typed dict position (check to_json location method)
 
@@ -55,7 +56,9 @@ class LocationOut(BaseModel):
     reported_by: Optional[int] = None
     report_expires: Optional[datetime] = None
 
-    _utc_datetime = validator('created_at', 'updated_at', 'report_expires', allow_reuse=True)(convert_to_utc)
+    _utc_datetime = validator(
+        "created_at", "updated_at", "report_expires", allow_reuse=True
+    )(convert_to_utc)
 
     class Config:
         orm_mode = True
@@ -74,4 +77,3 @@ class LocationReports(BaseModel):
     water: report.WaterReport
     fuelStation: report.FuelStationReport
     hospital: report.HospitalReport
-

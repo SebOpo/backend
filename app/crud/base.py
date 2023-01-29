@@ -1,8 +1,8 @@
 from typing import TypeVar, Generic, Type, List, Union, Dict, Any
 
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from fastapi.encoders import jsonable_encoder
 
 from app.db.base_class import Base
 
@@ -12,7 +12,6 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-
     def __init__(self, model: Type[ModelType]):
         self.model = model
 
@@ -30,15 +29,17 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_all(self, db: Session) -> List[ModelType]:
         return db.query(self.model).all()
 
-    def get_many(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[ModelType]:
+    def get_many(
+        self, db: Session, *, skip: int = 0, limit: int = 100
+    ) -> List[ModelType]:
         return db.query(self.model).offset(skip).limit(limit).all()
 
     def update(
-            self,
-            db: Session,
-            *,
-            db_obj: ModelType,
-            obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+        self,
+        db: Session,
+        *,
+        db_obj: ModelType,
+        obj_in: Union[UpdateSchemaType, Dict[str, Any]]
     ) -> ModelType:
         pass
 

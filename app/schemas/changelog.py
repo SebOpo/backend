@@ -1,5 +1,5 @@
-from typing import Optional, Dict
 from datetime import datetime
+from typing import Optional, Dict
 
 from pydantic import BaseModel, validator
 
@@ -15,7 +15,7 @@ class ChangelogOut(BaseModel):
     old_flags: Optional[Dict]
     new_flags: Dict
 
-    _utc_created_at = validator('created_at', allow_reuse=True)(convert_to_utc)
+    _utc_created_at = validator("created_at", allow_reuse=True)(convert_to_utc)
 
     class Config:
         orm_mode = True

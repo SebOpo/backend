@@ -1,20 +1,18 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
+
 from app.models.changelog import ChangeLog
 
 
 def create_changelog(
-        db: Session,
-        location_id: int,
-        old_object: dict,
-        new_object: dict
+    db: Session, location_id: int, old_object: dict, new_object: dict
 ) -> ChangeLog:
 
     changelog = ChangeLog(
         location_id=location_id,
         action_type=1,
         old_flags=old_object,
-        new_flags=new_object
+        new_flags=new_object,
     )
 
     db.add(changelog)
@@ -24,7 +22,9 @@ def create_changelog(
 
 
 def get_changelogs(db: Session, location_id: int) -> ChangeLog:
-    return db.query(ChangeLog).filter(ChangeLog.location_id == location_id)\
-        .order_by(desc(ChangeLog.created_at)).all()
-
-
+    return (
+        db.query(ChangeLog)
+        .filter(ChangeLog.location_id == location_id)
+        .order_by(desc(ChangeLog.created_at))
+        .all()
+    )
