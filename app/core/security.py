@@ -6,23 +6,22 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 
-
 ALGORITHM = "HS256"
 
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def create_access_token(
-        subject: Union[str, Any],
-        scopes: list,
-        expires_delta: timedelta = None
+    subject: Union[str, Any], scopes: list, expires_delta: timedelta = None
 ) -> str:
 
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
 
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
 
     to_encode = {"exp": expire, "sub": str(subject), "scopes": scopes}
 

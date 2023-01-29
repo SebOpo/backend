@@ -1,5 +1,5 @@
-import time
 import datetime
+import time
 
 
 def str_time_prop(start, end, time_format, prop):
@@ -14,12 +14,10 @@ def str_time_prop(start, end, time_format, prop):
 def random_date(start, end, prop):
 
     # Usage example : random_date("1/1/2008 1:30 PM", "1/1/2009 4:50 AM", random.random())
-    return str_time_prop(start, end, '%m/%d/%Y %I:%M %p', prop)
+    return str_time_prop(start, end, "%m/%d/%Y %I:%M %p", prop)
 
 
-def utc_convert(
-    timestamp: datetime.datetime
-):
+def utc_convert(timestamp: datetime.datetime):
     """
     This method is used for transforming python datetime format to include Z (Zulu/Zero offset) so JavaScript frontend
     can correctly understand it.
@@ -30,5 +28,4 @@ def utc_convert(
     :param datetime timestamp: The initial time we want to convert to a JS readable UTC format.
     :return: A converted string with Z at the end.
     """
-    return timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
-
+    return timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")

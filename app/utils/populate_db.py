@@ -11,28 +11,25 @@ def populate_reports():
     return {
         "buildingCondition": {
             "flag": get_random_enum_choice(enums.BuildingConditionEnum),
-            "description": ""
+            "description": "",
         },
         "electricity": {
             "flag": get_random_enum_choice(enums.ElectricityEnum),
-            "description": ""
+            "description": "",
         },
         "carEntrance": {
             "flag": get_random_enum_choice(enums.CarEntranceEnum),
-            "description": ""
+            "description": "",
         },
-        "water": {
-            "flag": get_random_enum_choice(enums.WaterEnum),
-            "description": ""
-        },
+        "water": {"flag": get_random_enum_choice(enums.WaterEnum), "description": ""},
         "fuelStation": {
             "flag": get_random_enum_choice(enums.FuelStationEnum),
             "description": "",
-            "distance": random.uniform(0.1, 9.9)
+            "distance": random.uniform(0.1, 9.9),
         },
         "hospital": {
             "flag": get_random_enum_choice(enums.HospitalEnum),
             "description": "",
-            "distance": random.uniform(0.1, 9.9)
-        }
+            "distance": random.uniform(0.1, 9.9),
+        },
     }

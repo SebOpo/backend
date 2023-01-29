@@ -1,13 +1,10 @@
 import os
-
 from logging.config import fileConfig
 
+from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
-from alembic import context
-
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -21,6 +18,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from app.db.base import Base
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -31,7 +29,7 @@ target_metadata = Base.metadata
 
 def get_url():
     user = os.getenv("POSTGRES_USER", "postgres")
-    password = os.getenv("POSTGRES_PASSWORD", 'admin')
+    password = os.getenv("POSTGRES_PASSWORD", "admin")
     server = os.getenv("POSTGRES_SERVER", "localhost")
     db = os.getenv("POSTGRES_DB", "app")
     return f"postgresql://{user}:{password}@{server}/{db}"
@@ -56,7 +54,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         compare_type=True,
         process_revision_directives=alembic_helpers.writer,
-        render_item=alembic_helpers.render_item
+        render_item=alembic_helpers.render_item,
     )
 
     with context.begin_transaction():
@@ -80,7 +78,9 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata, compare_type=True,
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
             # process_revision_directives=alembic_helpers.writer,
             # render_item=alembic_helpers.render_item
         )

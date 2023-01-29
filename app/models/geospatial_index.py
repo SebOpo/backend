@@ -7,7 +7,7 @@ class GeospatialIndex(Base):
     id = Column(Integer, primary_key=True)
 
     geohash = Column(String, index=True)
-    location_id = Column(Integer, ForeignKey('location.id', ondelete="CASCADE"))
+    location_id = Column(Integer, ForeignKey("location.id", ondelete="CASCADE"))
 
     lat = Column(Float)
     lng = Column(Float)

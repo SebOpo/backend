@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app import schemas
+
 # TODO: find a better name
 from app.components import user as userc
 from app.core.config import settings
