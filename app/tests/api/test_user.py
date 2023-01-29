@@ -1,13 +1,12 @@
 from typing import Dict
+
 from fastapi.testclient import TestClient
-
 from sqlalchemy.orm import Session
-
-from app.core.config import settings
 
 # TODO: Find a better name
 from app.components import user as userc
-from app.crud import crud_organizations as org_crud
+from app.components.organizations import crud as org_crud
+from app.core.config import settings
 from app.tests.utils.utils import random_lower_string
 
 

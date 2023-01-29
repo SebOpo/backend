@@ -3,9 +3,9 @@ from typing import Optional, List
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
-from app.models.organization import Organization
-from app.components.user.models import User
-from app.schemas.organization import OrganizationBase
+from app.components import user as userc
+from app.components.organizations.models import Organization
+from app.components.organizations.schemas import OrganizationBase
 
 
 def create(db: Session, *, obj_in: OrganizationBase) -> Organization:
@@ -75,9 +75,11 @@ def add_members(
 
     for user in user_emails:
         db_user = (
-            db.query(User)
+            db.query(userc.models.User)
             .filter(
-                User.email == user, User.email_confirmed == True, User.is_active == True
+                userc.models.User.email == user,
+                userc.models.User.email_confirmed == True,
+                userc.models.User.is_active == True,
             )
             .first()
         )
@@ -95,7 +97,7 @@ def remove_members(
     db: Session, organization_id: int, user_id: int
 ) -> Optional[Organization]:
 
-    db_user = db.query(User).get(user_id)
+    db_user = db.query(userc.models.User).get(user_id)
     if not db_user or not db_user.organization:
         return None
 

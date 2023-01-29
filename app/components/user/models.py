@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
+from app.components.organizations.models import Organization
 from app.db.base_class import Base
 from app.db.utc_convertation import utcnow
-from app.models.organization import Organization
 
 role_permissions = {
     "aid_worker": ["locations:view", "locations:edit", "users:me", "users:edit"],

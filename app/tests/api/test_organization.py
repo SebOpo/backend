@@ -1,13 +1,11 @@
 from typing import Dict
 
 from fastapi.testclient import TestClient
-
 from sqlalchemy.orm import Session
-
-from app.crud import crud_organizations as crud
 
 # TODO: Find a better name
 from app.components import user as userc
+from app.components.organizations import crud
 from app.core.config import settings
 
 
