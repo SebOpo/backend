@@ -6,8 +6,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db
-# TODO: find a better name
-from app.components import user as userc
+from app.components import users
 from app.components.auth.schemas import Token
 from app.core.config import settings
 from app.core.security import create_access_token
@@ -23,7 +22,7 @@ async def login_user(
     # Base Oauth2 Form only has 2 fields, username and password, so we are using email here,
     # but passing it as a username.
 
-    user = userc.crud.authenticate(
+    user = users.crud.authenticate(
         db=db, email=form_data.username, password=form_data.password
     )
 

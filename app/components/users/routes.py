@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
 from app.components.organizations import crud as organizationc
-from app.components.user import schemas, models, crud
+from app.components.users import schemas, models, crud
 from app.core.config import settings
 from app.utils.email_sender import send_email
 

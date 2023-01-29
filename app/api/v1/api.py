@@ -8,13 +8,13 @@ from app.api.v1.endpoints import sessions
 from app.api.v1.endpoints import zones
 from app.components.auth import routes as auth
 from app.components.organizations import routes as organizations
-from app.components.user import routes as user
+from app.components.users import routes as users
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(locations.router, prefix="/locations", tags=["locations"])
-api_router.include_router(user.router, prefix="/users", tags=["users"])
+api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(
     organizations.router, prefix="/organizations", tags=["organizations"]
 )
