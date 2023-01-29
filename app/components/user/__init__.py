@@ -1,8 +1,7 @@
-from . import crud, models, schemas, routes
+from . import crud, models, schemas
 
 __all__ = [
     "crud",
     "models",
     "schemas",
-    "routes",
 ]

@@ -1,13 +1,15 @@
 from typing import Generator
 
 from fastapi import Depends, HTTPException, status, Security
-from fastapi.security.oauth2 import OAuth2PasswordBearer
 from fastapi.security import SecurityScopes
+from fastapi.security.oauth2 import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
-from app.components.user import crud as crud_user
-from app import models, schemas
+
+from app import schemas
+# TODO: Find a better name
+from app.components import user as userc
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -34,7 +36,7 @@ def get_current_user(
     security_scopes: SecurityScopes,
     db: Session = Depends(get_db),
     token: str = Depends(reusable_oauth2),
-) -> models.User:
+) -> userc.models.User:
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
     else:
@@ -56,7 +58,7 @@ def get_current_user(
         print(e)
         raise credentials_exception
 
-    user = crud_user.get(db, user_id=token_data.sub)
+    user = userc.crud.get(db, user_id=token_data.sub)
     if not user:
         raise credentials_exception
 
@@ -77,8 +79,8 @@ def get_current_user(
 
 
 def get_current_active_user(
-    current_user: models.User = Security(get_current_user, scopes=["users:me"])
-) -> models.User:
+    current_user: userc.models.User = Security(get_current_user, scopes=["users:me"])
+) -> userc.models.User:
 
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="User is not active")

@@ -1,20 +1,20 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import locations
-from app.components import user
 from app.api.v1.endpoints import auth
-from app.api.v1.endpoints import sessions
-from app.api.v1.endpoints import organizations
-from app.api.v1.endpoints import oauth
-from app.api.v1.endpoints import zones
-from app.api.v1.endpoints import guest_user
 from app.api.v1.endpoints import geocoding
+from app.api.v1.endpoints import guest_user
+from app.api.v1.endpoints import locations
+from app.api.v1.endpoints import oauth
+from app.api.v1.endpoints import organizations
+from app.api.v1.endpoints import sessions
+from app.api.v1.endpoints import zones
+from app.components.user import routes as user
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(locations.router, prefix="/locations", tags=["locations"])
-api_router.include_router(user.router.router, prefix="/users", tags=["users"])
+api_router.include_router(user.router, prefix="/users", tags=["users"])
 api_router.include_router(
     organizations.router, prefix="/organizations", tags=["organizations"]
 )
