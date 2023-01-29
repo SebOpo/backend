@@ -1,13 +1,9 @@
 import datetime
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr, validator
 
 from app.schemas.validators import convert_to_utc
-
-# TODO: Find a better name
-if TYPE_CHECKING:
-    from app.components import user as userc
 
 
 class OrganizationBase(BaseModel):
@@ -29,3 +25,12 @@ class OrganizationOut(OrganizationBase):
 
 class OrganizationUserInvite(BaseModel):
     emails: List[EmailStr]
+
+
+# TODO: Find a better name
+# TODO: Nasty import hack, will look for something better
+# From here: https://stackoverflow.com/questions/63420889/fastapi-pydantic-circular-references-in-separate-files
+from app.components import user as userc
+
+# Pydantic hack to avoid circular imports
+OrganizationOut.update_forward_refs()
