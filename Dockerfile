@@ -1,13 +1,18 @@
-FROM public.ecr.aws/docker/library/python:3.9
+FROM --platform=linux/amd64 python:3.8
 WORKDIR /src
-COPY ./requirements.txt /src/requirements.txt
-COPY ./populate_db.py /src/populate_db.py
-COPY ./pre_start.sh /src/pre_start.sh
-COPY ./alembic.ini /src/alembic.ini 
-COPY ./alembic /src/alembic
-COPY ./.env /src/.env
-RUN pip install --no-cache-dir --upgrade -r /src/requirements.txt
-COPY ./app /src/app
-COPY ./startup.sh /src/startup.sh
+
+# Update and install dependencies
+RUN apt-get update && pip install --upgrade pip
+COPY ./requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy scripts and application code
+COPY populate_db.py \
+    alembic.ini \
+    startup.sh \
+    alembic \
+    app \
+    ./
+
 EXPOSE 7000
-CMD ["/bin/sh", "-c", "/src/startup.sh" ]
+CMD ["./startup.sh"]
