@@ -22,7 +22,7 @@ from app.core.config import settings
 from app.crud import crud_changelogs as logs_crud
 from app.crud import crud_geospatial as geo_crud
 from app.crud import crud_location as crud
-from app.crud import crud_zones as zone_crud
+from app.components.zones.crud import zones
 from app.crud.crud_geospatial import geospatial_index
 from app.crud.crud_location import locations
 from app.utils import geocoding
@@ -40,8 +40,10 @@ async def add_new_location(
     ),
 ) -> Any:
     # Checking if the new location does not intersect with restricted ones.
-    restricted_intersection = zone_crud.check_new_point_intersections(
-        db=db, lat=location.lat, lng=location.lng
+    restricted_intersection = zones.check_new_point_intersections(
+        db=db,
+        lat=location.lat,
+        lng=location.lng
     )
     if restricted_intersection:
         raise HTTPException(
@@ -131,8 +133,10 @@ async def request_location_review(
             status_code=400, detail="Review request for this location was already sent"
         )
 
-    restricted_intersection = zone_crud.check_new_point_intersections(
-        db, location.lng, location.lat
+    restricted_intersection = zones.check_new_point_intersections(
+        db=db,
+        lng=location.lng,
+        lat=location.lat
     )
     if restricted_intersection:
         raise HTTPException(

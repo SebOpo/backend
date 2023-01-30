@@ -3,9 +3,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Security, status, Response
 from sqlalchemy.orm import Session
 
-from app import schemas
+from app.components.zones import schemas, crud
 from app.api.dependencies import get_db, get_current_active_user
-from app.crud import crud_zones as crud
 from app.utils import geocoding
 
 router = APIRouter()
@@ -18,15 +17,23 @@ async def restrict_zone(
     current_user=Security(get_current_active_user, scopes=["zones:create"]),
 ) -> Any:
 
-    existing_zone = crud.get_zone_by_verbose_name(db, zone.value)
+    existing_zone = crud.zones.get_zone_by_verbose_name(
+        db,
+        zone.verbose_name
+    )
     if existing_zone:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Such zone already exists"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Such zone already exists"
         )
 
-    geom = geocoding.get_bounding_box_by_region_name(zone.value)
-    restricted_zone = crud.add_restricted_zone(
-        db, zone.zone_type, zone.value, str(geom)
+    geom = geocoding.get_bounding_box_by_region_name(zone.verbose_name)
+    restricted_zone = crud.zones.create(
+        db=db,
+        obj_in=schemas.ZoneCreate(
+            **zone.dict(),
+            bounding_box=str(geom)
+        )
     )
 
     return restricted_zone
@@ -39,7 +46,10 @@ async def allow_zone(
     current_user=Security(get_current_active_user, scopes=["zones:edit"]),
 ) -> Any:
 
-    result = crud.allow_zone(db, zone_id)
+    result = crud.zones.delete(
+        db=db,
+        model_id=zone_id
+    )
     if not result:
         raise HTTPException(status_code=400, detail="No such zone.")
 
@@ -52,5 +62,5 @@ async def get_restricted_zones(
     current_user=Security(get_current_active_user, scopes=["zones:get"]),
 ) -> Any:
 
-    zones = crud.get_all_restricted_zones(db)
+    zones = crud.zones.get_all(db)
     return zones
