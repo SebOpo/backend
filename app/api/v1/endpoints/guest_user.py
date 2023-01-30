@@ -11,7 +11,7 @@ from app.api.dependencies import get_db
 from app.core.config import settings
 from app.crud import crud_basic_user as crud
 from app.crud import crud_location as location_crud
-from app.crud import crud_zones as zone_crud
+from app.components.zones.crud import zones
 from app.utils import geocoding
 from app.utils import sms_sender as sms
 from app.utils.time_utils import utc_convert
@@ -101,8 +101,10 @@ async def request_location_info_with_otp(
             detail="Cannot get the address of this location, please check your coordinates.",
         )
 
-    restricted_intersection = zone_crud.check_new_point_intersections(
-        db, location_request.lng, location_request.lat
+    restricted_intersection = zones.check_new_point_intersections(
+        db=db,
+        lng=location_request.lng,
+        lat=location_request.lat
     )
 
     if restricted_intersection:

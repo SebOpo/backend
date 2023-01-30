@@ -21,4 +21,3 @@ from .oauth import *
 from .roles import UserRole
 from .session import UserSession
 from .session import UserSession
-from .zone import ZoneBase

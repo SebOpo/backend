@@ -9,7 +9,7 @@ from app.models.oauth import OauthScope, OauthRole, association_table
 from app.models.reportoptions import ReportOption
 from app.models.reports import Report
 from app.models.sessionhistory import SessionHistory
-from app.models.zone import Zone
+from app.components.zones.models import Zone
 
 __all__ = [
     "Base",

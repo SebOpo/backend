@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.crud import crud_zones as crud
+from app.components.zones import crud as crud
 from app.utils.geocoding import get_bounding_box_by_region_name
 
 
@@ -12,7 +12,7 @@ def test_restrict_zone(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    payload = {"zone_type": 1, "value": "Crimea"}
+    payload = {"zone_type": 1, "verbose_name": "Crimea"}
 
     r = client.post(
         f"{settings.API_V1_STR}/zones/restrict",
@@ -57,7 +57,7 @@ def test_allow_zone(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    existing_zone = crud.get_zone_by_verbose_name(test_db, "Crimea")
+    existing_zone = crud.zones.get_zone_by_verbose_name(test_db, "Crimea")
     r = client.delete(
         f"{settings.API_V1_STR}/zones/allow?zone_id={existing_zone.id}",
         headers=superuser_token_headers,
