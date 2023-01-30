@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.components.geospatial import crud as geo_crud
-from app.crud.crud_location import locations
-from app.models.location import Location
+from app.components.locations.crud import locations
+from app.components.locations.models import Location
 from app.utils.populate_db import populate_reports
 
 

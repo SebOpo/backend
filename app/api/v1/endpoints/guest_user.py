@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
@@ -10,11 +11,14 @@ from app import schemas
 from app.api.dependencies import get_db
 from app.core.config import settings
 from app.crud import crud_basic_user as crud
-from app.crud import crud_location as location_crud
+from app.components.locations.crud import locations
 from app.components.zones.crud import zones
+from app.components.locations.schemas import LocationRequest
 from app.utils import geocoding
 from app.utils import sms_sender as sms
 from app.utils.time_utils import utc_convert
+from app.components.geospatial.crud import geospatial_index
+from app.components.geospatial import schemas as geo_schemas
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -84,21 +88,13 @@ async def request_location_info_with_otp(
             status_code=400, detail="Provided otp is not valid or expired"
         )
 
-    existing_location = location_crud.get_location_by_coordinates(
+    existing_location = locations.get_location_by_coordinates(
         db, location_request.lat, location_request.lng
     )
 
     if existing_location:
         raise HTTPException(
             status_code=400, detail="Review request for this location was already sent."
-        )
-
-    address = geocoding.reverse(location_request.lat, location_request.lng)
-
-    if not address:
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot get the address of this location, please check your coordinates.",
         )
 
     restricted_intersection = zones.check_new_point_intersections(
@@ -112,18 +108,30 @@ async def request_location_info_with_otp(
             status_code=403, detail="Locations in this area are restricted."
         )
 
-    location_to_review = location_crud.create_location_review_request(
-        db,
-        address=address,
-        lat=location_request.lat,
-        lng=location_request.lng,
-        requested_by=guest_user.id,
+    address = geocoding.reverse(location_request.lat, location_request.lng)
+    if not address:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot get the address of this location, please check your coordinates.",
+        )
+
+    new_location = locations.create(
+        db=db,
+        obj_in=LocationRequest(
+            **location_request.dict(),
+            **address,
+            requested_by=guest_user.id
+        )
     )
 
-    if not location_to_review:
+    geo_index = geospatial_index.create(
+        db=db, obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
+    )
+
+    if not new_location:
         raise HTTPException(
             status_code=500,
             detail="Encountered an unexpected error, please try again later.",
         )
 
-    return location_to_review.to_json()
+    return new_location.to_json()

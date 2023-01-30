@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.config import settings
-from app.crud.crud_location import bulk_insert_locations
+from app.components.locations.crud import bulk_insert_locations
 from app.db.session import SessionLocal
 from app.utils.geocoding import geocode_address
 
