@@ -5,9 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.api.dependencies import get_db, get_current_active_user
-
-# TODO: Find a better name:
-from app.components import user as userc
+from app.components import users
 from app.crud import crud_sessions as crud
 
 router = APIRouter()
@@ -15,7 +13,7 @@ router = APIRouter()
 
 @router.get("/active", response_model=List[schemas.UserSession])
 async def get_active_sessions(
-    current_user: userc.models.User = Depends(get_current_active_user),
+    current_user: users.models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
 
@@ -27,7 +25,7 @@ async def get_active_sessions(
 @router.post("/revoke", response_model=schemas.UserSession)
 async def revoke_user_session(
     session_id: int,
-    current_user: userc.models.User = Depends(get_current_active_user),
+    current_user: users.models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
 

@@ -17,9 +17,7 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.api.dependencies import get_db, get_current_active_user
-
-# TODO: Find a better name
-from app.components import user as userc
+from app.components import users
 from app.core.config import settings
 from app.crud import crud_changelogs as logs_crud
 from app.crud import crud_geospatial as geo_crud
@@ -37,7 +35,7 @@ router = APIRouter()
 async def add_new_location(
     location: schemas.LocationCreate,
     db: Session = Depends(get_db),
-    current_user: userc.models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:create"]
     ),
 ) -> Any:
@@ -202,7 +200,7 @@ async def get_requested_locations(
 async def assign_location_report(
     location_id: int,
     db: Session = Depends(get_db),
-    current_user: userc.models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
@@ -218,7 +216,7 @@ async def assign_location_report(
 async def remove_report_assignment(
     location_id: int,
     db: Session = Depends(get_db),
-    current_user: userc.models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
@@ -235,7 +233,7 @@ async def remove_report_assignment(
 @router.get("/assigned-locations", response_model=List[schemas.LocationOut])
 async def get_user_assigned_locations(
     db: Session = Depends(get_db),
-    current_user: userc.models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:view"]
     ),
 ) -> Any:
@@ -248,7 +246,7 @@ async def get_user_assigned_locations(
 async def submit_location_report(
     reports: schemas.LocationReports,
     db: Session = Depends(get_db),
-    current_user: userc.models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
