@@ -4,7 +4,7 @@ from app.db.base_class import Base
 from app.models.changelog import ChangeLog
 from app.components.geospatial.models import GeospatialIndex
 from app.models.guest_user import GuestUser
-from app.models.location import Location
+from app.components.locations.models import Location
 from app.models.oauth import OauthScope, OauthRole, association_table
 from app.models.reportoptions import ReportOption
 from app.models.reports import Report

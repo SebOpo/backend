@@ -15,16 +15,16 @@ from fastapi import (
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
-from app import schemas
 from app.api.dependencies import get_db, get_current_active_user
+from app.schemas import ChangelogOut
 from app.components import users
 from app.core.config import settings
 from app.crud import crud_changelogs as logs_crud
 from app.components.geospatial import crud as geo_crud
-from app.crud import crud_location as crud
+from app.components.locations import crud, schemas
 from app.components.zones.crud import zones
 from app.components.geospatial.crud import geospatial_index
-from app.crud.crud_location import locations
+from app.components.locations.crud import locations
 from app.utils import geocoding
 from app.utils.bulk_locations import upload_locations
 from app.components.geospatial import schemas as geo_schemas
@@ -51,7 +51,7 @@ async def add_new_location(
             status_code=403, detail="Locations in this area are restricted"
         )
     # Checking if the new location does not already exist
-    existing_location = crud.get_location_by_coordinates(
+    existing_location = locations.get_location_by_coordinates(
         db=db, lat=location.lat, lng=location.lng
     )
     if existing_location:
@@ -78,7 +78,7 @@ async def add_new_location(
 @router.get("/search")
 async def get_location(lat: float, lng: float, db: Session = Depends(get_db)) -> Any:
 
-    location = crud.get_location_by_coordinates(db, lat, lng)
+    location = locations.get_location_by_coordinates(db, lat, lng)
 
     if not location:
         raise HTTPException(status_code=400, detail="Not found")
@@ -113,7 +113,7 @@ async def get_location_info(location_id: int, db: Session = Depends(get_db)) -> 
     return location.to_json()
 
 
-@router.get("/changelogs", response_model=List[schemas.ChangelogOut])
+@router.get("/changelogs", response_model=List[ChangelogOut])
 async def get_location_changelogs(
     location_id: int, db: Session = Depends(get_db)
 ) -> Any:
@@ -128,7 +128,7 @@ async def request_location_review(
     location: schemas.LocationBase, db: Session = Depends(get_db)
 ) -> Any:
 
-    existing_location = crud.get_location_by_coordinates(db, location.lat, location.lng)
+    existing_location = locations.get_location_by_coordinates(db, location.lat, location.lng)
     if existing_location:
         raise HTTPException(
             status_code=400, detail="Review request for this location was already sent"
@@ -151,9 +151,9 @@ async def request_location_review(
             detail="Cannot get the address of this location, please check you query",
         )
 
-    new_location = locations.create_request(
+    new_location = locations.create(
         db=db,
-        location=schemas.LocationRequest(
+        obj_in=schemas.LocationRequest(
             **location.dict(),
             **address,
         ),
@@ -183,7 +183,7 @@ async def get_pending_locations_count(
     current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
 
-    return {"count": crud.get_locations_awaiting_reports_count(db)}
+    return {"count": locations.get_locations_awaiting_reports_count(db)}
 
 
 @router.get("/location-requests", response_model=List[schemas.LocationOut])
@@ -196,9 +196,9 @@ async def get_requested_locations(
     current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
 
-    locations = crud.get_locations_awaiting_reports(db, limit, page - 1)
+    location_list = locations.get_locations_awaiting_reports(db, limit, page - 1)
 
-    return [location.to_json(user_lat, user_lng) for location in locations]
+    return [location.to_json(user_lat, user_lng) for location in location_list]
 
 
 @router.put("/assign-location")
@@ -210,7 +210,9 @@ async def assign_location_report(
     ),
 ) -> Any:
 
-    location = crud.assign_report(db, current_user.id, location_id)
+    location = locations.assign_report(
+        db, user_id=current_user.id, location_id=location_id
+    )
     if not location:
         raise HTTPException(status_code=400, detail="Location is already assigned")
 
@@ -225,7 +227,9 @@ async def remove_report_assignment(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
-    location = crud.remove_assignment(db, location_id, current_user.id)
+    location = locations.remove_assignment(
+        db, location_id=location_id, user=current_user
+    )
     if not location:
         raise HTTPException(
             status_code=400,
@@ -243,8 +247,10 @@ async def get_user_assigned_locations(
     ),
 ) -> Any:
 
-    locations = crud.get_user_assigned_locations(db, current_user.id)
-    return [location.to_json() for location in locations]
+    location_list = locations.get_user_assigned_locations(
+        db, user_id=current_user.id
+    )
+    return [location.to_json() for location in location_list]
 
 
 @router.put("/submit-report")
