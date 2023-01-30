@@ -1,5 +1,5 @@
 from app.components.organizations.models import Organization
-from app.components.user.models import User
+from app.components.users.models import User
 from app.db.base_class import Base
 from app.models.changelog import ChangeLog
 from app.models.geospatial_index import GeospatialIndex

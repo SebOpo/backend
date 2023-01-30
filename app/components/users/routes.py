@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status, Respons
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
-from app.components.organizations import crud as organizationc
-from app.components.user import schemas, models, crud
+from app.components import organizations
+from app.components.users import schemas, models, crud
 from app.core.config import settings
 from app.utils.email_sender import send_email
 
@@ -52,7 +52,9 @@ async def generate_invite_link(
         raise HTTPException(status_code=400, detail="User exists")
 
     new_user = crud.create_invite(
-        db, obj_in=user, organization=organizationc.get_by_id(db, user.organization)
+        db,
+        obj_in=user,
+        organization=organizations.crud.get_by_id(db, user.organization),
     )
 
     if not new_user:
