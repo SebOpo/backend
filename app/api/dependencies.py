@@ -7,7 +7,8 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from app import models, crud, schemas
+from app.components import auth
+from app.components import users
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -34,7 +35,7 @@ def get_current_user(
     security_scopes: SecurityScopes,
     db: Session = Depends(get_db),
     token: str = Depends(reusable_oauth2),
-) -> models.User:
+) -> users.models.User:
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
     else:
@@ -50,13 +51,13 @@ def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
-        token_data = schemas.TokenBase(**payload)
+        token_data = auth.schemas.TokenBase(**payload)
 
     except (jwt.JWTError, ValidationError) as e:
         print(e)
         raise credentials_exception
 
-    user = crud.crud_user.get(db, user_id=token_data.sub)
+    user = users.crud.get(db, user_id=token_data.sub)
     if not user:
         raise credentials_exception
 
@@ -77,8 +78,8 @@ def get_current_user(
 
 
 def get_current_active_user(
-    current_user: models.User = Security(get_current_user, scopes=["users:me"])
-) -> models.User:
+    current_user: users.models.User = Security(get_current_user, scopes=["users:me"])
+) -> users.models.User:
 
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="User is not active")

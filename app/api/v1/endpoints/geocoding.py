@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, Security
 
-from app import schemas, models
+from app import schemas
 from app.api.dependencies import get_current_active_user
 from app.core.config import settings
 from app.utils import geocoding
@@ -17,9 +17,7 @@ async def reverse_geocode_location(
     lat: float,
     lng: float,
     geocoder: schemas.GeocoderEnum = "osm",
-    current_user: models.User = Security(
-        get_current_active_user, scopes=["locations:view"]
-    ),
+    current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
 
     address_info = geocoding.reverse(lat=lat, lng=lng, geocoding_service=geocoder)

@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 from app.db.utc_convertation import utcnow
-from app.models.organization import Organization
 
 role_permissions = {
     "aid_worker": ["locations:view", "locations:edit", "users:me", "users:edit"],
@@ -27,7 +26,7 @@ class User(Base):
     username = Column(String)
     full_name = Column(String, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    organization = Column(Integer, ForeignKey(Organization.id, ondelete="SET NULL"))
+    organization = Column(Integer, ForeignKey("organization.id", ondelete="SET NULL"))
 
     hashed_password = Column(String)
 

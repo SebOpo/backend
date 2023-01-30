@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Security, status, Response
 from sqlalchemy.orm import Session
 
-from app import schemas, models
+from app import schemas
 from app.api.dependencies import get_db, get_current_active_user
 from app.crud import crud_zones as crud
 from app.utils import geocoding
@@ -15,9 +15,7 @@ router = APIRouter()
 async def restrict_zone(
     zone: schemas.ZoneBase,
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
-        get_current_active_user, scopes=["zones:create"]
-    ),
+    current_user=Security(get_current_active_user, scopes=["zones:create"]),
 ) -> Any:
 
     existing_zone = crud.get_zone_by_verbose_name(db, zone.value)
@@ -38,9 +36,7 @@ async def restrict_zone(
 async def allow_zone(
     zone_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
-        get_current_active_user, scopes=["zones:edit"]
-    ),
+    current_user=Security(get_current_active_user, scopes=["zones:edit"]),
 ) -> Any:
 
     result = crud.allow_zone(db, zone_id)
@@ -53,7 +49,7 @@ async def allow_zone(
 @router.get("/zones")
 async def get_restricted_zones(
     db: Session = Depends(get_db),
-    current_user: models.User = Security(get_current_active_user, scopes=["zones:get"]),
+    current_user=Security(get_current_active_user, scopes=["zones:get"]),
 ) -> Any:
 
     zones = crud.get_all_restricted_zones(db)

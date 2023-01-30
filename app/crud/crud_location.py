@@ -8,13 +8,13 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app import schemas
+from app.components import users
 from app.core.config import settings
 from app.crud.base import CRUDBase
 from app.crud.crud_changelogs import create_changelog
 from app.crud.crud_geospatial import create_index
 from app.models.geospatial_index import GeospatialIndex
 from app.models.location import Location
-from app.models.user import User
 from app.schemas.location import LocationReports
 
 logger = logging.getLogger(settings.PROJECT_NAME)
@@ -22,7 +22,11 @@ logger = logging.getLogger(settings.PROJECT_NAME)
 
 class CRUDLocation(CRUDBase[Location, schemas.LocationCreate, schemas.LocationReports]):
     def create_new_location(
-        self, db: Session, *, location: schemas.LocationCreate, reported_by: User
+        self,
+        db: Session,
+        *,
+        location: schemas.LocationCreate,
+        reported_by: users.models.User
     ) -> Location:
 
         try:
@@ -141,7 +145,7 @@ def assign_report(db: Session, user_id: int, location_id: int) -> Optional[Locat
     location.reported_by = user_id
     location.report_expires = datetime.now() + timedelta(days=1)
 
-    user = db.query(User).get(user_id)
+    user = db.query(users.models.User).get(user_id)
     user.last_activity = datetime.now()
 
     db.commit()
@@ -160,7 +164,7 @@ def remove_assignment(
     location.reported_by = None
     location.report_expires = None
 
-    user = db.query(User).get(user_id)
+    user = db.query(users.models.User).get(user_id)
     user.last_activity = datetime.now()
 
     db.commit()
@@ -228,7 +232,7 @@ def submit_location_reports(
     )
     index_record.status = 3
 
-    user = db.query(User).get(user_id)
+    user = db.query(users.models.User).get(user_id)
     user.last_activity = datetime.now()
 
     db.commit()
@@ -258,7 +262,9 @@ def bulk_insert_locations(db: Session, locations: List[Dict]) -> Dict:
     exceptions = []
 
     reporting_user = (
-        db.query(User).filter(User.email == settings.FIRST_SUPERUSER).first()
+        db.query(users.models.User)
+        .filter(users.models.User.email == settings.FIRST_SUPERUSER)
+        .first()
     )
 
     for location in locations:

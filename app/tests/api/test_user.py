@@ -3,9 +3,9 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.components import users
+from app.components.organizations import crud as org_crud
 from app.core.config import settings
-from app.crud import crud_organizations as org_crud
-from app.crud import crud_user as crud
 from app.tests.utils.utils import random_lower_string
 
 
@@ -44,7 +44,7 @@ def test_invite_new_user(
 
     assert 200 <= r.status_code < 300
     invited_user = r.json()
-    user = crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert user
     assert user.email == invited_user["email"]
     assert user.email_confirmed == False
@@ -53,7 +53,7 @@ def test_invite_new_user(
 
 
 def test_confirm_user_invite(client: TestClient, test_db: Session) -> None:
-    test_user_registration_token = crud.get_by_email(
+    test_user_registration_token = users.crud.get_by_email(
         test_db, email=settings.TEST_USER_EMAIL
     ).registration_token
     assert test_user_registration_token
@@ -72,7 +72,7 @@ def test_confirm_user_invite(client: TestClient, test_db: Session) -> None:
 
     assert 200 <= r.status_code < 300
     registered_user = r.json()
-    user = crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert user
     assert user.username == registered_user["username"]
     assert user.email_confirmed == True
@@ -92,7 +92,7 @@ def test_get_me(client: TestClient, aid_worker_token_headers: Dict[str, str]) ->
 def test_patch_user(
     client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
 ) -> None:
-    existing_user = crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    existing_user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
 
     payload = {
         "username": random_lower_string(),
@@ -168,7 +168,7 @@ def test_user_change_role(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    aid_worker_user = crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    aid_worker_user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert aid_worker_user
 
     r = client.put(
@@ -192,7 +192,7 @@ def test_user_password_reset(
 
     assert 200 <= r.status_code < 300
 
-    aid_worker = crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    aid_worker = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert aid_worker.password_renewal_token
     assert aid_worker.password_renewal_token_expires
 
@@ -231,5 +231,5 @@ def test_user_delete_me(
     )
     assert 200 <= r.status_code < 300
 
-    user = crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert user is None

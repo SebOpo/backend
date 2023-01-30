@@ -15,8 +15,9 @@ from fastapi import (
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
-from app import schemas, models
+from app import schemas
 from app.api.dependencies import get_db, get_current_active_user
+from app.components import users
 from app.core.config import settings
 from app.crud import crud_changelogs as logs_crud
 from app.crud import crud_geospatial as geo_crud
@@ -34,7 +35,7 @@ router = APIRouter()
 async def add_new_location(
     location: schemas.LocationCreate,
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:create"]
     ),
 ) -> Any:
@@ -187,9 +188,7 @@ async def get_requested_locations(
     user_lat: float = None,
     user_lng: float = None,
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
-        get_current_active_user, scopes=["locations:view"]
-    ),
+    current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
 
     locations = crud.get_locations_awaiting_reports(db, limit, page - 1)
@@ -201,7 +200,7 @@ async def get_requested_locations(
 async def assign_location_report(
     location_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
@@ -217,7 +216,7 @@ async def assign_location_report(
 async def remove_report_assignment(
     location_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
@@ -234,7 +233,7 @@ async def remove_report_assignment(
 @router.get("/assigned-locations", response_model=List[schemas.LocationOut])
 async def get_user_assigned_locations(
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:view"]
     ),
 ) -> Any:
@@ -247,7 +246,7 @@ async def get_user_assigned_locations(
 async def submit_location_report(
     reports: schemas.LocationReports,
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
+    current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
@@ -266,9 +265,7 @@ async def submit_location_report(
 async def remove_location(
     location_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
-        get_current_active_user, scopes=["locations:delete"]
-    ),
+    current_user=Security(get_current_active_user, scopes=["locations:delete"]),
 ) -> Any:
 
     # TODO place to archive?
@@ -323,9 +320,7 @@ async def bulk_add_locations(
 @router.delete("/bulk-delete")
 async def delete_all_locations(
     db: Session = Depends(get_db),
-    current_user: models.User = Security(
-        get_current_active_user, scopes=["locations:delete"]
-    ),
+    current_user=Security(get_current_active_user, scopes=["locations:delete"]),
 ) -> Any:
 
     if settings.ENV_TYPE != "test":

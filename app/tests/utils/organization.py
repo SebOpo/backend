@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.crud import crud_organizations as crud
+from app.components.organizations import crud
 
 
 def get_master_organization(db: Session) -> int:

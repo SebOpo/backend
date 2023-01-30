@@ -3,8 +3,9 @@ from typing import List
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import schemas
 from app.api.dependencies import get_db, get_current_active_user
+from app.components import users
 from app.crud import crud_sessions as crud
 
 router = APIRouter()
@@ -12,7 +13,7 @@ router = APIRouter()
 
 @router.get("/active", response_model=List[schemas.UserSession])
 async def get_active_sessions(
-    current_user: models.User = Depends(get_current_active_user),
+    current_user: users.models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
 
@@ -24,7 +25,7 @@ async def get_active_sessions(
 @router.post("/revoke", response_model=schemas.UserSession)
 async def revoke_user_session(
     session_id: int,
-    current_user: models.User = Depends(get_current_active_user),
+    current_user: users.models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
 

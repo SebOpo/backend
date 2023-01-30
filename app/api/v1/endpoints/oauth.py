@@ -3,7 +3,7 @@ from typing import Any, List
 from fastapi import APIRouter, Security, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import schemas
 from app.api.dependencies import get_current_active_user, get_db
 from app.crud.crud_oauth import scopes, roles
 
@@ -13,9 +13,7 @@ router = APIRouter()
 @router.post("/roles/create", response_model=schemas.OauthRoleOut)
 async def create_oauth_role(
     oauth_role: schemas.OauthRoleCreate,
-    current_active_user: models.User = Security(
-        get_current_active_user, scopes=["oauth:create"]
-    ),
+    current_active_user=Security(get_current_active_user, scopes=["oauth:create"]),
     db: Session = Depends(get_db),
 ) -> Any:
 
@@ -30,9 +28,7 @@ async def create_oauth_role(
 
 @router.get("/roles/all", response_model=List[schemas.OauthRoleOut])
 async def get_all_oauth_roles(
-    current_active_user: models.User = Security(
-        get_current_active_user, scopes=["oauth:read"]
-    ),
+    current_active_user=Security(get_current_active_user, scopes=["oauth:read"]),
     db: Session = Depends(get_db),
 ) -> Any:
 
@@ -44,9 +40,7 @@ async def get_all_oauth_roles(
 async def patch_oauth_role(
     role_id: int,
     oauth_role: schemas.OauthRoleCreate,
-    current_active_user: models.User = Security(
-        get_current_active_user, scopes=["oauth:edit"]
-    ),
+    current_active_user=Security(get_current_active_user, scopes=["oauth:edit"]),
     db: Session = Depends(get_db),
 ) -> Any:
 
@@ -64,9 +58,7 @@ async def patch_oauth_role(
 
 @router.get("/scopes/all", response_model=List[schemas.OauthScopeOut])
 async def get_all_oauth_scopes(
-    current_active_user: models.User = Security(
-        get_current_active_user, scopes=["oauth:read"]
-    ),
+    current_active_user=Security(get_current_active_user, scopes=["oauth:read"]),
     db: Session = Depends(get_db),
 ) -> Any:
 

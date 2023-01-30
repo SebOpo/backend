@@ -3,9 +3,9 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, Security, status, Response
 from sqlalchemy.orm import Session
 
-from app import schemas, models
 from app.api.dependencies import get_db, get_current_active_user
-from app.crud import crud_organizations as crud
+from app.components.organizations import crud
+from app.components.organizations import schemas
 
 router = APIRouter()
 
@@ -14,7 +14,7 @@ router = APIRouter()
 async def create_organization(
     organization: schemas.OrganizationBase,
     db: Session = Depends(get_db),
-    current_active_user: models.User = Security(
+    current_active_user=Security(
         get_current_active_user, scopes=["organizations:create"]
     ),
 ) -> Any:
@@ -39,7 +39,7 @@ async def get_organization_list(
     page: int = 1,
     limit: int = 20,
     db: Session = Depends(get_db),
-    current_active_user: models.User = Security(
+    current_active_user=Security(
         get_current_active_user, scopes=["organizations:view"]
     ),
 ) -> Any:
@@ -50,7 +50,7 @@ async def get_organization_list(
 async def search_organizations_by_name(
     query: str,
     db: Session = Depends(get_db),
-    current_active_user: models.User = Security(
+    current_active_user=Security(
         get_current_active_user, scopes=["organizations:view"]
     ),
 ) -> Any:
@@ -65,7 +65,7 @@ async def search_organizations_by_name(
 async def get_organization_by_id(
     organization_id: int,
     db: Session = Depends(get_db),
-    current_active_user: models.User = Security(
+    current_active_user=Security(
         get_current_active_user, scopes=["organizations:view"]
     ),
 ) -> Any:
@@ -81,7 +81,7 @@ async def edit_organization_data(
     organization_id: int,
     data: schemas.OrganizationBase,
     db: Session = Depends(get_db),
-    current_active_user: models.User = Security(
+    current_active_user=Security(
         get_current_active_user, scopes=["organizations:edit"]
     ),
 ) -> Any:
@@ -100,7 +100,7 @@ async def invite_organization_members(
     organization_id: int,
     users: schemas.OrganizationUserInvite,
     db: Session = Depends(get_db),
-    current_active_user: models.User = Security(
+    current_active_user=Security(
         get_current_active_user, scopes=["organizations:edit"]
     ),
 ) -> Any:
@@ -120,7 +120,7 @@ async def remove_organization_member(
     organization_id: int,
     user_id: int,
     db: Session = Depends(get_db),
-    current_active_user: models.User = Security(
+    current_active_user=Security(
         get_current_active_user, scopes=["organizations:edit"]
     ),
 ) -> Any:
@@ -143,7 +143,7 @@ async def remove_organization_member(
 async def delete_organization(
     organization_id: int,
     db: Session = Depends(get_db),
-    current_active_user: models.User = Security(
+    current_active_user=Security(
         get_current_active_user, scopes=["organizations:delete"]
     ),
 ) -> Any:
