@@ -12,8 +12,8 @@ from app.components import users
 from app.core.config import settings
 from app.crud.base import CRUDBase
 from app.crud.crud_changelogs import create_changelog
-from app.crud.crud_geospatial import create_index
-from app.models.geospatial_index import GeospatialIndex
+from app.components.geospatial.crud import create_index
+from app.components.geospatial.models import GeospatialIndex
 from app.models.location import Location
 from app.schemas.location import LocationReports
 

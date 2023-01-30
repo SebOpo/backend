@@ -1,4 +1,3 @@
-from typing import Optional, List
 import logging
 
 from shapely import wkt

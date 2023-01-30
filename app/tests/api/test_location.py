@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.crud import crud_geospatial as geo_crud
+from app.components.geospatial import crud as geo_crud
 from app.crud.crud_location import locations
 from app.models.location import Location
 from app.utils.populate_db import populate_reports
@@ -37,7 +37,7 @@ def test_add_new_location(
     location = locations.get(db=test_db, model_id=added_location["id"])
     assert location.status == 3
     assert added_location["address"] == location.address
-    geo_record = geo_crud.search_index_by_location_id(test_db, location_id=location.id)
+    geo_record = geo_crud.geospatial_index.search_index_by_location_id(test_db, location_id=location.id)
     assert geo_record.geohash
 
 
@@ -55,7 +55,7 @@ def test_request_location_info(
     location = locations.get(db=test_db, model_id=requested_location["id"])
     assert location.status == 1
     assert requested_location["address"] == location.address
-    geospatial_record = geo_crud.search_index_by_location_id(
+    geospatial_record = geo_crud.geospatial_index.search_index_by_location_id(
         test_db, location_id=location.id
     )
     assert geospatial_record
