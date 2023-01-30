@@ -3,9 +3,9 @@ from typing import List
 import pygeohash as pgh
 from sqlalchemy.orm import Session
 
-from app import schemas
+from app.components.geospatial import schemas
 from app.crud.base import CRUDBase
-from app.models import GeospatialIndex
+from app.components.geospatial.models import GeospatialIndex
 
 
 class CRUDGeospatial(
@@ -68,11 +68,3 @@ def search_indexes_in_range(
     query = "{}%".format(geohash)
 
     return db.query(GeospatialIndex).filter(GeospatialIndex.geohash.like(query)).all()
-
-
-def search_index_by_location_id(db: Session, location_id: int) -> GeospatialIndex:
-    return (
-        db.query(GeospatialIndex)
-        .filter(GeospatialIndex.location_id == location_id)
-        .first()
-    )

@@ -20,13 +20,14 @@ from app.api.dependencies import get_db, get_current_active_user
 from app.components import users
 from app.core.config import settings
 from app.crud import crud_changelogs as logs_crud
-from app.crud import crud_geospatial as geo_crud
+from app.components.geospatial import crud as geo_crud
 from app.crud import crud_location as crud
 from app.components.zones.crud import zones
-from app.crud.crud_geospatial import geospatial_index
+from app.components.geospatial.crud import geospatial_index
 from app.crud.crud_location import locations
 from app.utils import geocoding
 from app.utils.bulk_locations import upload_locations
+from app.components.geospatial import schemas as geo_schemas
 
 router = APIRouter()
 
@@ -61,7 +62,7 @@ async def add_new_location(
     )
     # Creating a geospatial index
     geo_index = geospatial_index.create(
-        db=db, obj_in=schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
+        db=db, obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
     )
     # Adding location changelog record
     changelog = logs_crud.create_changelog(
@@ -85,7 +86,7 @@ async def get_location(lat: float, lng: float, db: Session = Depends(get_db)) ->
     return location.to_json()
 
 
-@router.post("/cord_search", response_model=List[schemas.GeospatialRecordOut])
+@router.post("/cord_search", response_model=List[geo_schemas.GeospatialRecordOut])
 async def get_locations_by_coordinates(
     coordinates: schemas.LocationBase, db: Session = Depends(get_db)
 ) -> Any:
@@ -159,7 +160,7 @@ async def request_location_review(
     )
 
     geo_index = geospatial_index.create(
-        db=db, obj_in=schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
+        db=db, obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
     )
 
     return new_location.to_json()

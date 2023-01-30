@@ -2,7 +2,7 @@ from app.components.organizations.models import Organization
 from app.components.users.models import User
 from app.db.base_class import Base
 from app.models.changelog import ChangeLog
-from app.models.geospatial_index import GeospatialIndex
+from app.components.geospatial.models import GeospatialIndex
 from app.models.guest_user import GuestUser
 from app.models.location import Location
 from app.models.oauth import OauthScope, OauthRole, association_table
