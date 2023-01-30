@@ -1,14 +1,16 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 
-from app.components.user.models import User
-from app.components.user.schemas import UserCreate, UserBase, UserInvite
+from app.components.users.models import User
+from app.components.users.schemas import UserCreate, UserBase, UserInvite
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.crud.crud_oauth import roles
-from app.models.organization import Organization
+
+if TYPE_CHECKING:
+    from app.components import organizations
 
 
 def get_by_email(db: Session, *, email: str) -> Optional[User]:
@@ -41,19 +43,22 @@ def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
     return db_obj
 
 
-def create_invite(db: Session, *, obj_in: UserInvite) -> Optional[User]:
+def create_invite(
+    db: Session,
+    *,
+    obj_in: UserInvite,
+    organization: "organizations.models.Organization"
+) -> Optional[User]:
 
     user_role = roles.get_role_by_name(db=db, role_name="aid_worker")
     if not user_role:
         return None
-
-    db_org = db.query(Organization).get(obj_in.organization)
-    if not db_org:
+    if not organization:
         return None
 
     db_obj = User(
         email=obj_in.email,
-        organization=db_org.id,
+        organization=organization.id,
         is_active=False,
         role=user_role.verbose_name,
         registration_token=create_access_token(

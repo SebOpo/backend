@@ -8,7 +8,7 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app import schemas
-from app.components import user as userc
+from app.components import users
 from app.core.config import settings
 from app.crud.base import CRUDBase
 from app.crud.crud_changelogs import create_changelog
@@ -26,7 +26,7 @@ class CRUDLocation(CRUDBase[Location, schemas.LocationCreate, schemas.LocationRe
         db: Session,
         *,
         location: schemas.LocationCreate,
-        reported_by: userc.models.User
+        reported_by: users.models.User
     ) -> Location:
 
         try:
@@ -145,7 +145,7 @@ def assign_report(db: Session, user_id: int, location_id: int) -> Optional[Locat
     location.reported_by = user_id
     location.report_expires = datetime.now() + timedelta(days=1)
 
-    user = db.query(userc.models.User).get(user_id)
+    user = db.query(users.models.User).get(user_id)
     user.last_activity = datetime.now()
 
     db.commit()
@@ -164,7 +164,7 @@ def remove_assignment(
     location.reported_by = None
     location.report_expires = None
 
-    user = db.query(userc.models.User).get(user_id)
+    user = db.query(users.models.User).get(user_id)
     user.last_activity = datetime.now()
 
     db.commit()
@@ -232,7 +232,7 @@ def submit_location_reports(
     )
     index_record.status = 3
 
-    user = db.query(userc.models.User).get(user_id)
+    user = db.query(users.models.User).get(user_id)
     user.last_activity = datetime.now()
 
     db.commit()
@@ -262,8 +262,8 @@ def bulk_insert_locations(db: Session, locations: List[Dict]) -> Dict:
     exceptions = []
 
     reporting_user = (
-        db.query(userc.models.User)
-        .filter(userc.models.User.email == settings.FIRST_SUPERUSER)
+        db.query(users.models.User)
+        .filter(users.models.User.email == settings.FIRST_SUPERUSER)
         .first()
     )
 

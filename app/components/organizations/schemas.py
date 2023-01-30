@@ -3,6 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr, validator
 
+from app.components import users
 from app.schemas.validators import convert_to_utc
 
 
@@ -15,7 +16,7 @@ class OrganizationBase(BaseModel):
 class OrganizationOut(OrganizationBase):
     id: int
     created_at: datetime.datetime
-    participants: Optional[List["userc.schemas.UserRepresentation"]]
+    participants: Optional[List[users.schemas.UserRepresentation]]
 
     _utc_created_at = validator("created_at", allow_reuse=True)(convert_to_utc)
 
@@ -25,12 +26,3 @@ class OrganizationOut(OrganizationBase):
 
 class OrganizationUserInvite(BaseModel):
     emails: List[EmailStr]
-
-
-# TODO: Find a better name
-# TODO: Nasty import hack, will look for something better
-# From here: https://stackoverflow.com/questions/63420889/fastapi-pydantic-circular-references-in-separate-files
-from app.components import user as userc
-
-# Pydantic hack to avoid circular imports
-OrganizationOut.update_forward_refs()
