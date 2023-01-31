@@ -8,12 +8,8 @@ from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db
-from app.components import locations
-from app.components.geospatial import schemas as geo_schemas
-from app.components.geospatial.crud import geospatial_index
-from app.components.guests import crud
-from app.components.guests import schemas
-from app.components.zones.crud import zones
+from app.components import locations, geospatial, zones
+from app.components.guests import crud, schemas
 from app.core.config import settings
 from app.utils import geocoding
 from app.utils import sms_sender as sms
@@ -96,7 +92,7 @@ async def request_location_info_with_otp(
             status_code=400, detail="Review request for this location was already sent."
         )
 
-    restricted_intersection = zones.check_new_point_intersections(
+    restricted_intersection = zones.crud.zones.check_new_point_intersections(
         db=db, lng=location_request.lng, lat=location_request.lat
     )
 
@@ -121,9 +117,11 @@ async def request_location_info_with_otp(
         ),
     )
 
-    geo_index = geospatial_index.create(
+    geo_index = geospatial.crud.geospatial_index.create(
         db=db,
-        obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location))),
+        obj_in=geospatial.schemas.GeospatialRecordCreate(
+            **(jsonable_encoder(new_location))
+        ),
     )
 
     if not new_location:

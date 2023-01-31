@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 
-from app.components.guests.models import GuestUser
+from app.components import guests
 from app.db.base_class import Base
 from app.db.utc_convertation import utcnow
 
@@ -18,7 +18,9 @@ class Location(Base):
     updated_at = Column(DateTime, default=utcnow())
 
     requested_by = Column(
-        Integer, ForeignKey(GuestUser.id, ondelete="SET NULL"), nullable=True
+        Integer,
+        ForeignKey(guests.models.GuestUser.id, ondelete="SET NULL"),
+        nullable=True,
     )
 
     report_expires = Column(DateTime)
