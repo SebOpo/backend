@@ -4,7 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, EmailStr, validator
 
 from app.components import users
-from app.schemas.validators import convert_to_utc
+from app.utils.validators import convert_to_utc
 
 
 class OrganizationBase(BaseModel):

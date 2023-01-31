@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, validator
 
-from app.schemas.validators import convert_to_utc
+from app.utils.validators import convert_to_utc
 
 
 class UserBase(BaseModel):

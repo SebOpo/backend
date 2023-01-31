@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, validator
 
-from app.schemas.validators import convert_to_utc
+from app.utils.validators import convert_to_utc
 
 
 class UserSession(BaseModel):

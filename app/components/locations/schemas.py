@@ -5,7 +5,7 @@ from pydantic import BaseModel, validator
 from typing_extensions import TypedDict
 
 from app.components import reports, geocoding
-from app.schemas.validators import convert_to_utc
+from app.utils.validators import convert_to_utc
 
 
 # TODO LocationOut class with typed dict position (check to_json location method)
