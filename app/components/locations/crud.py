@@ -13,8 +13,8 @@ from app.components.geospatial.crud import create_index
 from app.components.geospatial.models import GeospatialIndex
 from app.components.locations import schemas
 from app.components.locations.models import Location
+from app.core.base_crud import CRUDBase
 from app.core.config import settings
-from app.crud.base import CRUDBase
 
 logger = logging.getLogger(settings.PROJECT_NAME)
 

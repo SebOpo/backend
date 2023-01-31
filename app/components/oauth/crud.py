@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.components.oauth import models, schemas
-from app.crud.base import CRUDBase
+from app.core.base_crud import CRUDBase
 
 
 class CRUDScopes(
