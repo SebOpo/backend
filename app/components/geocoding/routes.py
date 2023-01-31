@@ -3,8 +3,8 @@ from typing import Any
 
 from fastapi import APIRouter, Security
 
-from app import schemas
 from app.api.dependencies import get_current_active_user
+from app.components.geocoding import schemas, enums
 from app.core.config import settings
 from app.utils import geocoding
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(settings.PROJECT_NAME)
 async def reverse_geocode_location(
     lat: float,
     lng: float,
-    geocoder: schemas.GeocoderEnum = "osm",
+    geocoder: enums.GeocoderEnum = "osm",
     current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
 

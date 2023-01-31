@@ -4,8 +4,7 @@ from typing import Optional, Dict
 from pydantic import BaseModel, validator
 from typing_extensions import TypedDict
 
-from app.components import reports
-from app.schemas import geocoding
+from app.components import reports, geocoding
 from app.schemas.validators import convert_to_utc
 
 
@@ -35,7 +34,7 @@ class LocationCreate(LocationBase):
     reports: Reports
 
 
-class LocationRequest(LocationBase, geocoding.OSMGeocodingResults):
+class LocationRequest(LocationBase, geocoding.schemas.OSMGeocodingResults):
     status: int = 1
     requested_by: int = None
 

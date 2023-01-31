@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import geocoding
 from app.components import (
     locations,
     oauth,
@@ -10,6 +9,7 @@ from app.components import (
     users,
     guests,
     sessions,
+    geocoding,
 )
 
 api_router = APIRouter()
@@ -26,4 +26,6 @@ api_router.include_router(sessions.routes.router, prefix="/sessions", tags=["ses
 api_router.include_router(oauth.routes.router, prefix="/oauth", tags=["oauth"])
 api_router.include_router(zones.routes.router, prefix="/zones", tags=["zones"])
 api_router.include_router(guests.routes.router, prefix="/guest", tags=["guest-user"])
-api_router.include_router(geocoding.router, prefix="/geocode", tags=["geocoding"])
+api_router.include_router(
+    geocoding.routes.router, prefix="/geocode", tags=["geocoding"]
+)
