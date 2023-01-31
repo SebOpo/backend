@@ -4,13 +4,15 @@ from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.components import users
-from app.components.organizations.models import Organization
-from app.components.organizations.schemas import OrganizationBase
+from app.components.organizations import models, schemas
 
 
-def create(db: Session, *, obj_in: OrganizationBase) -> Organization:
-
-    db_obj = Organization(
+def create(
+    db: Session,
+    *,
+    obj_in: schemas.OrganizationBase,
+) -> models.Organization:
+    db_obj = models.Organization(
         name=obj_in.name, website=obj_in.website, description=obj_in.description
     )
 
@@ -20,28 +22,30 @@ def create(db: Session, *, obj_in: OrganizationBase) -> Organization:
     return db_obj
 
 
-def get_by_id(db: Session, organization_id: int) -> Optional[Organization]:
-    return db.query(Organization).get(organization_id)
+def get_by_id(db: Session, organization_id: int) -> Optional[models.Organization]:
+    return db.query(models.Organization).get(organization_id)
 
 
-def get_by_name(db: Session, name: str) -> Optional[Organization]:
-    return db.query(Organization).filter(Organization.name == name).first()
-
-
-def get_by_substr(db: Session, name: str) -> List[Organization]:
+def get_by_name(db: Session, name: str) -> Optional[models.Organization]:
     return (
-        db.query(Organization)
-        .filter(func.lower(Organization.name).startswith(name))
+        db.query(models.Organization).filter(models.Organization.name == name).first()
+    )
+
+
+def get_by_substr(db: Session, name: str) -> List[models.Organization]:
+    return (
+        db.query(models.Organization)
+        .filter(func.lower(models.Organization.name).startswith(name))
         .all()
     )
 
 
 def get_organizations_list(
     db: Session, limit: int = 20, skip: int = 0
-) -> List[Organization]:
+) -> List[models.Organization]:
     return (
-        db.query(Organization)
-        .order_by(desc(Organization.created_at))
+        db.query(models.Organization)
+        .order_by(desc(models.Organization.created_at))
         .limit(limit)
         .offset(skip * limit)
         .all()
@@ -49,8 +53,8 @@ def get_organizations_list(
 
 
 def edit_organization(
-    db: Session, organization_id: int, obj_in: OrganizationBase
-) -> Optional[Organization]:
+    db: Session, organization_id: int, obj_in: schemas.OrganizationBase
+) -> Optional[models.Organization]:
 
     organization = get_by_id(db, organization_id=organization_id)
     if not organization:
@@ -69,7 +73,7 @@ def edit_organization(
 
 def add_members(
     db: Session, organization_id: int, user_emails: List[str]
-) -> Organization:
+) -> models.Organization:
 
     # TODO refactor this!
 
@@ -95,7 +99,7 @@ def add_members(
 
 def remove_members(
     db: Session, organization_id: int, user_id: int
-) -> Optional[Organization]:
+) -> Optional[models.Organization]:
 
     db_user = db.query(users.models.User).get(user_id)
     if not db_user or not db_user.organization:
@@ -108,7 +112,10 @@ def remove_members(
     return get_by_id(db, organization_id=organization_id)
 
 
-def delete_organization(db: Session, organization_id: int) -> Optional[Organization]:
+def delete_organization(
+    db: Session,
+    organization_id: int,
+) -> Optional[models.Organization]:
 
     organization = get_by_id(db, organization_id=organization_id)
 

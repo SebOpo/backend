@@ -3,7 +3,7 @@ from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 
-from app.components.oauth.crud import roles
+from app.components import oauth
 from app.components.users.models import User
 from app.components.users.schemas import UserCreate, UserBase, UserInvite
 from app.core.config import settings
@@ -23,7 +23,7 @@ def get(db: Session, *, user_id: int) -> Optional[User]:
 
 def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
 
-    user_role = roles.get_role_by_name(db, role)
+    user_role = oauth.crud.roles.get_role_by_name(db, role)
 
     if not user_role:
         return None
@@ -50,7 +50,7 @@ def create_invite(
     organization: "organizations.models.Organization"
 ) -> Optional[User]:
 
-    user_role = roles.get_role_by_name(db=db, role_name="aid_worker")
+    user_role = oauth.crud.roles.get_role_by_name(db=db, role_name="aid_worker")
     if not user_role:
         return None
     if not organization:
@@ -174,7 +174,7 @@ def change_role(db: Session, user_id: int, role: str) -> Optional[User]:
     if not user:
         return None
 
-    role = roles.get_role_by_name(db, role)
+    role = oauth.crud.roles.get_role_by_name(db, role)
     if not role:
         return None
 
