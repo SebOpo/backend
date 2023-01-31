@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
 
 
+# TODO: Unused as of 31/01/2023
 class UserRole(BaseModel):
 
     verbose_name: str
