@@ -1,3 +1,4 @@
+from app.components.changelogs.models import ChangeLog
 from app.components.geospatial.models import GeospatialIndex
 from app.components.guests.models import GuestUser
 from app.components.locations.models import Location
@@ -7,7 +8,6 @@ from app.components.reports.models import Report, ReportOption
 from app.components.users.models import User
 from app.components.zones.models import Zone
 from app.db.base_class import Base
-from app.models.changelog import ChangeLog
 from app.models.sessionhistory import SessionHistory
 
 __all__ = [

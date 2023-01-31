@@ -16,18 +16,16 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
-from app.schemas import ChangelogOut
-from app.components import users
-from app.core.config import settings
-from app.crud import crud_changelogs as logs_crud
+from app.components import users, changelogs
 from app.components.geospatial import crud as geo_crud
-from app.components.locations import crud, schemas
-from app.components.zones.crud import zones
+from app.components.geospatial import schemas as geo_schemas
 from app.components.geospatial.crud import geospatial_index
+from app.components.locations import crud, schemas
 from app.components.locations.crud import locations
+from app.components.zones.crud import zones
+from app.core.config import settings
 from app.utils import geocoding
 from app.utils.bulk_locations import upload_locations
-from app.components.geospatial import schemas as geo_schemas
 
 router = APIRouter()
 
@@ -42,9 +40,7 @@ async def add_new_location(
 ) -> Any:
     # Checking if the new location does not intersect with restricted ones.
     restricted_intersection = zones.check_new_point_intersections(
-        db=db,
-        lat=location.lat,
-        lng=location.lng
+        db=db, lat=location.lat, lng=location.lng
     )
     if restricted_intersection:
         raise HTTPException(
@@ -55,17 +51,18 @@ async def add_new_location(
         db=db, lat=location.lat, lng=location.lng
     )
     if existing_location:
-        raise HTTPException(status_code=400, detal="Such location already exists")
+        raise HTTPException(status_code=400, detail="Such location already exists")
     # Creating a location itself
     new_location = locations.create_new_location(
         db=db, location=location, reported_by=current_user
     )
     # Creating a geospatial index
     geo_index = geospatial_index.create(
-        db=db, obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
+        db=db,
+        obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location))),
     )
     # Adding location changelog record
-    changelog = logs_crud.create_changelog(
+    changelog = changelogs.crud.create_changelog(
         db=db,
         location_id=new_location.id,
         old_object={},
@@ -113,12 +110,12 @@ async def get_location_info(location_id: int, db: Session = Depends(get_db)) -> 
     return location.to_json()
 
 
-@router.get("/changelogs", response_model=List[ChangelogOut])
+@router.get("/changelogs", response_model=List[changelogs.schemas.ChangelogOut])
 async def get_location_changelogs(
     location_id: int, db: Session = Depends(get_db)
 ) -> Any:
 
-    logs = logs_crud.get_changelogs(db, location_id)
+    logs = changelogs.crud.get_changelogs(db, location_id)
 
     return logs
 
@@ -128,16 +125,16 @@ async def request_location_review(
     location: schemas.LocationBase, db: Session = Depends(get_db)
 ) -> Any:
 
-    existing_location = locations.get_location_by_coordinates(db, location.lat, location.lng)
+    existing_location = locations.get_location_by_coordinates(
+        db, location.lat, location.lng
+    )
     if existing_location:
         raise HTTPException(
             status_code=400, detail="Review request for this location was already sent"
         )
 
     restricted_intersection = zones.check_new_point_intersections(
-        db=db,
-        lng=location.lng,
-        lat=location.lat
+        db=db, lng=location.lng, lat=location.lat
     )
     if restricted_intersection:
         raise HTTPException(
@@ -160,7 +157,8 @@ async def request_location_review(
     )
 
     geo_index = geospatial_index.create(
-        db=db, obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
+        db=db,
+        obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location))),
     )
 
     return new_location.to_json()
@@ -247,9 +245,7 @@ async def get_user_assigned_locations(
     ),
 ) -> Any:
 
-    location_list = locations.get_user_assigned_locations(
-        db, user_id=current_user.id
-    )
+    location_list = locations.get_user_assigned_locations(db, user_id=current_user.id)
     return [location.to_json() for location in location_list]
 
 
