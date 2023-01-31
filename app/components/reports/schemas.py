@@ -2,7 +2,7 @@ from typing import Optional
 
 from typing_extensions import TypedDict
 
-from app.schemas import enums
+from app.components.reports import enums
 
 
 class BuildingReport(TypedDict):
