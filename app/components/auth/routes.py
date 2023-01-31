@@ -6,11 +6,11 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db
+from app.components import oauth
 from app.components import users
 from app.components.auth.schemas import Token
 from app.core.config import settings
 from app.core.security import create_access_token
-from app.crud.crud_oauth import roles
 
 router = APIRouter()
 
@@ -32,7 +32,7 @@ async def login_user(
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
 
-    user_role = roles.get_role_by_name(db=db, role_name=user.role)
+    user_role = oauth.crud.roles.get_role_by_name(db=db, role_name=user.role)
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

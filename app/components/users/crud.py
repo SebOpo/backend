@@ -3,11 +3,11 @@ from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 
+from app.components.oauth.crud import roles
 from app.components.users.models import User
 from app.components.users.schemas import UserCreate, UserBase, UserInvite
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password, create_access_token
-from app.crud.crud_oauth import roles
 
 if TYPE_CHECKING:
     from app.components import organizations
