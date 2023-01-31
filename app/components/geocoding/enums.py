@@ -1,4 +1,4 @@
-from app.schemas import BasicEnum
+from app.utils.basic_enum import BasicEnum
 
 
 class GeocoderEnum(BasicEnum):

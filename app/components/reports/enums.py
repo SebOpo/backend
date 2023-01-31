@@ -1,10 +1,4 @@
-from enum import Enum
-
-
-class BasicEnum(str, Enum):
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
+from app.utils.basic_enum import BasicEnum
 
 
 class BuildingConditionEnum(BasicEnum):
@@ -41,5 +35,3 @@ class HospitalEnum(BasicEnum):
     open = "open"
     closed = "closed"
     no_data = "no_data"
-
-
