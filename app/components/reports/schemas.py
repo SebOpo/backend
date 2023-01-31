@@ -1,5 +1,6 @@
-from typing_extensions import TypedDict
 from typing import Optional
+
+from typing_extensions import TypedDict
 
 from app.schemas import enums
 
