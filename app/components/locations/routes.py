@@ -17,9 +17,8 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
 from app.components import users, changelogs
-from app.components.geospatial import crud as geo_crud
-from app.components.geospatial import schemas as geo_schemas
 from app.components.geospatial.crud import geospatial_index
+from app.components.geospatial import schemas as geo_schemas
 from app.components.locations import crud, schemas
 from app.components.locations.crud import locations
 from app.components.zones.crud import zones
@@ -91,13 +90,11 @@ async def get_locations_by_coordinates(
     coordinates: schemas.LocationBase, db: Session = Depends(get_db)
 ) -> Any:
 
-    markers = geo_crud.search_indexes_in_range(
+    markers = geospatial_index.search_indexes_in_range(
         db,
         coordinates.lat,
         coordinates.lng,
     )
-
-    print(f"Markers : {len(markers)}")
 
     return markers
 
@@ -336,5 +333,5 @@ async def delete_all_locations(
     if settings.ENV_TYPE != "test":
         raise HTTPException(status_code=403, detail="This endpoint is restricted.")
 
-    crud.drop_locations(db)
+    crud.locations.drop_locations(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -5,7 +5,8 @@ from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.config import settings
-from app.components.locations.crud import bulk_insert_locations
+# from app.components.locations.crud import bulk_insert_locations
+from app.components.locations import crud
 from app.db.session import SessionLocal
 from app.utils.geocoding import geocode_address
 
@@ -99,7 +100,7 @@ async def upload_locations(filepath: str, doctype: str):
         )
 
         logger.debug("Adding {} locations to database".format(len(geocoded_locations)))
-        db_locations = bulk_insert_locations(
+        db_locations = crud.locations.bulk_insert_locations(
             db=SessionLocal(), locations=geocoded_locations
         )
         added_locations = db_locations.get("added")

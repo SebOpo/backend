@@ -8,7 +8,6 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.components import users, changelogs
-from app.components.geospatial.crud import create_index
 from app.components.geospatial.models import GeospatialIndex
 from app.components.locations import schemas
 from app.components.locations.models import Location
@@ -170,136 +169,67 @@ class CRUDLocation(
                 .limit(records)
         )
 
+    def bulk_insert_locations(self, db: Session, location_list: List[Dict]) -> Dict:
+        from app.components.geospatial.crud import geospatial_index
+        from app.components.geospatial.schemas import GeospatialRecordCreate
+        added_locations = []
+        exceptions = []
 
-locations = CRUDLocation(Location)
+        reporting_user = (
+            db.query(users.models.User)
+                .filter(users.models.User.email == settings.FIRST_SUPERUSER)
+                .first()
+        )
 
+        for location in location_list:
+            try:
+                db_obj = self.model(
+                    address=location.get("address"),
+                    index=location.get("postcode"),
+                    lat=location.get("lat"),
+                    lng=location.get("lng"),
+                    country=location.get("country"),
+                    city=location.get("city"),
+                    status=3,
+                    reports=location.get("reports"),
+                    street_number=location.get("street_number", None),
+                )
 
-def submit_location_reports(
-    db: Session, *, obj_in: schemas.LocationReports, user_id: int
-) -> Any:
-    location = db.query(Location).get(obj_in.location_id)
+                db.add(db_obj)
+                db.commit()
+                db.refresh(db_obj)
 
-    if not location:
-        return None
+                index = geospatial_index.create(
+                    db=db,
+                    obj_in=GeospatialRecordCreate(**(jsonable_encoder(db_obj)))
+                )
 
-    # if not location.address:
-    if obj_in.address:
-        location.address = obj_in.address
+                self.submit_location_reports(
+                    db,
+                    obj_in=schemas.LocationUpdate(
+                        location_id=db_obj.id, reports=db_obj.reports
+                    ),
+                    user=reporting_user,
+                )
+                added_locations.append(db_obj)
 
-    # if not location.street_number:
-    if obj_in.street_number:
-        location.street_number = obj_in.street_number
+            except Exception as e:
+                print(e)
+                exceptions.append(
+                    {"location": location, "code": "DATABASE_ERROR", "detail": e}
+                )
 
-    if obj_in.city:
-        location.city = obj_in.city
+        return {"added": added_locations, "unprocessed": exceptions}
 
-    if obj_in.index:
-        location.index = obj_in.index
-
-    reports = {
-        "buildingCondition": obj_in.buildingCondition,
-        "electricity": obj_in.electricity,
-        "carEntrance": obj_in.carEntrance,
-        "water": obj_in.water,
-        "fuelStation": obj_in.fuelStation,
-        "hospital": obj_in.hospital,
-    }
-
-    old_reports = location.reports
-    new_reports = reports
-
-    location.reports = reports
-
-    # TODO confirmation for this?
-
-    # update location record
-    location.status = 3
-    location.report_expires = None
-    location.reported_by = user_id
-
-    # update
-    index_record = (
-        db.query(GeospatialIndex)
-        .filter(GeospatialIndex.location_id == obj_in.location_id)
-        .first()
-    )
-    index_record.status = 3
-
-    user = db.query(users.models.User).get(user_id)
-    user.last_activity = datetime.now()
-
-    db.commit()
-    db.refresh(location)
-
-    # changelog = create_changelog(
-    #     db, location_id=location.id, old_object=old_reports, new_object=new_reports
-    # )
-
-    # TODO rollback strategy if no changelog was created
-
-    return location
-
-
-def bulk_insert_locations(db: Session, locations: List[Dict]) -> Dict:
-    added_locations = []
-    exceptions = []
-
-    reporting_user = (
-        db.query(users.models.User)
-        .filter(users.models.User.email == settings.FIRST_SUPERUSER)
-        .first()
-    )
-
-    for location in locations:
+    def drop_locations(self, db: Session):
         try:
-            db_obj = Location(
-                address=location.get("address"),
-                index=location.get("postcode"),
-                lat=location.get("lat"),
-                lng=location.get("lng"),
-                country=location.get("country"),
-                city=location.get("city"),
-                status=3,
-                reports=location.get("reports"),
-                street_number=location.get("street_number", None),
-            )
-
-            db.add(db_obj)
+            db.query(self.model).delete()
             db.commit()
-            db.refresh(db_obj)
-
-            index = create_index(
-                db,
-                location_id=db_obj.id,
-                lat=db_obj.lat,
-                lng=db_obj.lng,
-                status=db_obj.status,
-            )
-
-            submit_location_reports(
-                db,
-                obj_in=schemas.LocationReports(
-                    location_id=db_obj.id, **location.get("reports")
-                ),
-                user_id=reporting_user.id,
-            )
-            added_locations.append(db_obj)
+            return None
 
         except Exception as e:
             print(e)
-            exceptions.append(
-                {"location": location, "code": "DATABASE_ERROR", "detail": e}
-            )
-
-    return {"added": added_locations, "unprocessed": exceptions}
+            return
 
 
-def drop_locations(db: Session):
-    try:
-        db.query(Location).delete()
-        db.commit()
-        return None
-
-    except Exception as e:
-        print(e)
-        return
+locations = CRUDLocation(Location)
