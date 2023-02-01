@@ -4,8 +4,8 @@ import pygeohash as pgh
 from sqlalchemy.orm import Session
 
 from app.components.geospatial import schemas
-from app.crud.base import CRUDBase
 from app.components.geospatial.models import GeospatialIndex
+from app.core.base_crud import CRUDBase
 
 
 class CRUDGeospatial(

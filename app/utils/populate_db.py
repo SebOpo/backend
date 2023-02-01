@@ -1,6 +1,6 @@
 import random
 
-from app.schemas import enums
+from app.components.reports import enums
 
 
 def get_random_enum_choice(enum):

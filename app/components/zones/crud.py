@@ -3,12 +3,11 @@ import logging
 from shapely import wkt
 from sqlalchemy.orm import Session
 
-from app.components.zones.models import Zone
 from app.components.zones import schemas, models
-from app.utils.geocoding import check_intersection
-from app.crud.base import CRUDBase
+from app.components.zones.models import Zone
+from app.core.base_crud import CRUDBase
 from app.core.config import settings
-
+from app.utils.geocoding import check_intersection
 
 logger = logging.getLogger(settings.PROJECT_NAME)
 

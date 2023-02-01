@@ -7,18 +7,13 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
-from app import schemas
 from app.api.dependencies import get_db
+from app.components import locations, geospatial, zones
+from app.components.guests import crud, schemas
 from app.core.config import settings
-from app.crud import crud_basic_user as crud
-from app.components.locations.crud import locations
-from app.components.zones.crud import zones
-from app.components.locations.schemas import LocationRequest
 from app.utils import geocoding
 from app.utils import sms_sender as sms
 from app.utils.time_utils import utc_convert
-from app.components.geospatial.crud import geospatial_index
-from app.components.geospatial import schemas as geo_schemas
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -88,7 +83,7 @@ async def request_location_info_with_otp(
             status_code=400, detail="Provided otp is not valid or expired"
         )
 
-    existing_location = locations.get_location_by_coordinates(
+    existing_location = locations.crud.get_location_by_coordinates(
         db, location_request.lat, location_request.lng
     )
 
@@ -97,10 +92,8 @@ async def request_location_info_with_otp(
             status_code=400, detail="Review request for this location was already sent."
         )
 
-    restricted_intersection = zones.check_new_point_intersections(
-        db=db,
-        lng=location_request.lng,
-        lat=location_request.lat
+    restricted_intersection = zones.crud.zones.check_new_point_intersections(
+        db=db, lng=location_request.lng, lat=location_request.lat
     )
 
     if restricted_intersection:
@@ -115,17 +108,20 @@ async def request_location_info_with_otp(
             detail="Cannot get the address of this location, please check your coordinates.",
         )
 
-    new_location = locations.create(
+    new_location = locations.crud.create(
         db=db,
-        obj_in=LocationRequest(
+        obj_in=locations.schemas.LocationRequest(
             **location_request.dict(),
             **address,
-            requested_by=guest_user.id
-        )
+            requested_by=guest_user.id,
+        ),
     )
 
-    geo_index = geospatial_index.create(
-        db=db, obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location)))
+    geo_index = geospatial.crud.geospatial_index.create(
+        db=db,
+        obj_in=geospatial.schemas.GeospatialRecordCreate(
+            **(jsonable_encoder(new_location))
+        ),
     )
 
     if not new_location:

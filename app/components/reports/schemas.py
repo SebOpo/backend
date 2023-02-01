@@ -1,7 +1,8 @@
-from typing_extensions import TypedDict
 from typing import Optional
 
-from app.schemas import enums
+from typing_extensions import TypedDict
+
+from app.components.reports import enums
 
 
 class BuildingReport(TypedDict):

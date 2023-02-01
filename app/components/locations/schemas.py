@@ -4,8 +4,8 @@ from typing import Optional, Dict
 from pydantic import BaseModel, validator
 from typing_extensions import TypedDict
 
-from app.schemas import report, geocoding
-from app.schemas.validators import convert_to_utc
+from app.components import reports, geocoding
+from app.utils.validators import convert_to_utc
 
 
 # TODO LocationOut class with typed dict position (check to_json location method)
@@ -17,12 +17,12 @@ class LocationBase(BaseModel):
 
 
 class Reports(TypedDict):
-    buildingCondition: report.BuildingReport
-    electricity: report.ElectricityReport
-    carEntrance: report.CarEntranceReport
-    water: report.WaterReport
-    fuelStation: report.FuelStationReport
-    hospital: report.HospitalReport
+    buildingCondition: reports.schemas.BuildingReport
+    electricity: reports.schemas.ElectricityReport
+    carEntrance: reports.schemas.CarEntranceReport
+    water: reports.schemas.WaterReport
+    fuelStation: reports.schemas.FuelStationReport
+    hospital: reports.schemas.HospitalReport
 
 
 class LocationCreate(LocationBase):
@@ -80,9 +80,9 @@ class LocationReports(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     index: Optional[int] = None
-    buildingCondition: report.BuildingReport
-    electricity: report.ElectricityReport
-    carEntrance: report.CarEntranceReport
-    water: report.WaterReport
-    fuelStation: report.FuelStationReport
-    hospital: report.HospitalReport
+    buildingCondition: reports.schemas.BuildingReport
+    electricity: reports.schemas.ElectricityReport
+    carEntrance: reports.schemas.CarEntranceReport
+    water: reports.schemas.WaterReport
+    fuelStation: reports.schemas.FuelStationReport
+    hospital: reports.schemas.HospitalReport

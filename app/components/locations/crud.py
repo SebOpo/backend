@@ -8,24 +8,26 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.components import users
-from app.core.config import settings
-from app.crud.base import CRUDBase
-from app.crud.crud_changelogs import create_changelog
+from app.components.changelogs.crud import create_changelog
 from app.components.geospatial.crud import create_index
 from app.components.geospatial.models import GeospatialIndex
-from app.components.locations.models import Location
 from app.components.locations import schemas
+from app.components.locations.models import Location
+from app.core.base_crud import CRUDBase
+from app.core.config import settings
 
 logger = logging.getLogger(settings.PROJECT_NAME)
 
 
-class CRUDLocation(CRUDBase[Location, schemas.LocationRequest, schemas.LocationReports]):
+class CRUDLocation(
+    CRUDBase[Location, schemas.LocationRequest, schemas.LocationReports]
+):
     def create_new_location(
-            self,
-            db: Session,
-            *,
-            location: schemas.LocationCreate,
-            reported_by: users.models.User
+        self,
+        db: Session,
+        *,
+        location: schemas.LocationCreate,
+        reported_by: users.models.User
     ) -> Location:
 
         try:
@@ -47,34 +49,36 @@ class CRUDLocation(CRUDBase[Location, schemas.LocationRequest, schemas.LocationR
         return db_obj
 
     def get_location_by_coordinates(
-            self, db: Session, lat: float, lng: float
+        self, db: Session, lat: float, lng: float
     ) -> Location:
         return (
             db.query(self.model)
-                .filter(self.model.lat == lat, self.model.lng == lng)
-                .first()
+            .filter(self.model.lat == lat, self.model.lng == lng)
+            .first()
         )
 
     def get_locations_awaiting_reports_count(self, db: Session) -> int:
         return (
             db.query(self.model)
-                .filter(self.model.status == 1, self.model.reported_by == None)
-                .count()
+            .filter(self.model.status == 1, self.model.reported_by == None)
+            .count()
         )
 
     def get_locations_awaiting_reports(
-            self, db: Session, limit: int = 20, skip: int = 0
+        self, db: Session, limit: int = 20, skip: int = 0
     ) -> List[Location]:
         return (
             db.query(self.model)
-                .filter(self.model.status == 1, self.model.reported_by == None)
-                .order_by(desc(self.model.created_at))
-                .limit(limit)
-                .offset(skip * limit)
-                .all()
+            .filter(self.model.status == 1, self.model.reported_by == None)
+            .order_by(desc(self.model.created_at))
+            .limit(limit)
+            .offset(skip * limit)
+            .all()
         )
 
-    def assign_report(self, db: Session, user_id: int, location_id: int) -> Optional[Location]:
+    def assign_report(
+        self, db: Session, user_id: int, location_id: int
+    ) -> Optional[Location]:
         location = db.query(self.model).get(location_id)
 
         if location.reported_by:
@@ -91,7 +95,7 @@ class CRUDLocation(CRUDBase[Location, schemas.LocationRequest, schemas.LocationR
         return location
 
     def remove_assignment(
-            self, db: Session, location_id: int, user: users.models.User
+        self, db: Session, location_id: int, user: users.models.User
     ) -> Optional[Location]:
         location = db.query(self.model).get(location_id)
 
@@ -110,8 +114,8 @@ class CRUDLocation(CRUDBase[Location, schemas.LocationRequest, schemas.LocationR
     def get_user_assigned_locations(self, db: Session, user_id: int) -> List[Location]:
         return (
             db.query(self.model)
-                .filter(self.model.reported_by == user_id, self.model.status == 1)
-                .all()
+            .filter(self.model.reported_by == user_id, self.model.status == 1)
+            .all()
         )
 
     def submit_location_reports(
@@ -158,7 +162,7 @@ locations = CRUDLocation(Location)
 
 
 def submit_location_reports(
-        db: Session, *, obj_in: schemas.LocationReports, user_id: int
+    db: Session, *, obj_in: schemas.LocationReports, user_id: int
 ) -> Any:
     location = db.query(Location).get(obj_in.location_id)
 
@@ -203,8 +207,8 @@ def submit_location_reports(
     # update
     index_record = (
         db.query(GeospatialIndex)
-            .filter(GeospatialIndex.location_id == obj_in.location_id)
-            .first()
+        .filter(GeospatialIndex.location_id == obj_in.location_id)
+        .first()
     )
     index_record.status = 3
 
@@ -226,9 +230,9 @@ def submit_location_reports(
 def get_activity_feed(db: Session, records: int = 10) -> List[Location]:
     return (
         db.query(Location)
-            .filter(Location.status == 3)
-            .order_by(desc(Location.created_at))
-            .limit(records)
+        .filter(Location.status == 3)
+        .order_by(desc(Location.created_at))
+        .limit(records)
     )
 
 
@@ -238,8 +242,8 @@ def bulk_insert_locations(db: Session, locations: List[Dict]) -> Dict:
 
     reporting_user = (
         db.query(users.models.User)
-            .filter(users.models.User.email == settings.FIRST_SUPERUSER)
-            .first()
+        .filter(users.models.User.email == settings.FIRST_SUPERUSER)
+        .first()
     )
 
     for location in locations:

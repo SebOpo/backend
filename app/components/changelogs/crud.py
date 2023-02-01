@@ -1,14 +1,14 @@
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from app.models.changelog import ChangeLog
+from app.components.changelogs import models
 
 
 def create_changelog(
     db: Session, location_id: int, old_object: dict, new_object: dict
-) -> ChangeLog:
+) -> models.ChangeLog:
 
-    changelog = ChangeLog(
+    changelog = models.ChangeLog(
         location_id=location_id,
         action_type=1,
         old_flags=old_object,
@@ -21,10 +21,10 @@ def create_changelog(
     return changelog
 
 
-def get_changelogs(db: Session, location_id: int) -> ChangeLog:
+def get_changelogs(db: Session, location_id: int) -> models.ChangeLog:
     return (
-        db.query(ChangeLog)
-        .filter(ChangeLog.location_id == location_id)
-        .order_by(desc(ChangeLog.created_at))
+        db.query(models.ChangeLog)
+        .filter(models.ChangeLog.location_id == location_id)
+        .order_by(desc(models.ChangeLog.created_at))
         .all()
     )
