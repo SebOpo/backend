@@ -157,6 +157,14 @@ class CRUDLocation(
 
         return location
 
+    def get_activity_feed(self, db: Session, records: int = 10) -> List[Location]:
+        return (
+            db.query(self.model)
+                .filter(self.model.status == 3)
+                .order_by(desc(self.model.created_at))
+                .limit(records)
+        )
+
 
 locations = CRUDLocation(Location)
 
@@ -225,15 +233,6 @@ def submit_location_reports(
     # TODO rollback strategy if no changelog was created
 
     return location
-
-
-def get_activity_feed(db: Session, records: int = 10) -> List[Location]:
-    return (
-        db.query(Location)
-        .filter(Location.status == 3)
-        .order_by(desc(Location.created_at))
-        .limit(records)
-    )
 
 
 def bulk_insert_locations(db: Session, locations: List[Dict]) -> Dict:

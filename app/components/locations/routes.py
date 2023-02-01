@@ -287,9 +287,9 @@ async def remove_location(
 @router.get("/recent-reports", response_model=List[schemas.LocationOut])
 async def get_activity_feed(records: int = 10, db: Session = Depends(get_db)) -> Any:
 
-    locations = crud.get_activity_feed(db, records)
+    location_list = crud.locations.get_activity_feed(db, records)
 
-    return [location.to_json() for location in locations]
+    return [location.to_json() for location in location_list]
 
 
 @router.post("/bulk-add")

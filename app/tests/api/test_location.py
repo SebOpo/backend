@@ -294,5 +294,14 @@ def test_request_location_without_valid_address(
     assert updated_location["street_number"] == "1"
     assert updated_location["status"] == 3
 
-    # delete the location
-    # location_crud.delete_location(test_db, updated_location['id'])
+
+def test_get_recent_location_reports(
+        client: TestClient, test_db: Session
+) -> None:
+
+    r = client.get(f'{settings.API_V1_STR}/locations/recent-reports')
+    assert 200 <= r.status_code < 300
+
+    recent_reports = r.json()
+    assert isinstance(recent_reports, list)
+    assert len(recent_reports) <= 10
