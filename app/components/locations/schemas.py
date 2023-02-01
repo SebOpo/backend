@@ -34,7 +34,16 @@ class LocationCreate(LocationBase):
     reports: Reports
 
 
-class LocationRequest(LocationBase, geocoding.schemas.OSMGeocodingResults):
+class LocationUpdate(BaseModel):
+    location_id: int
+    street_number: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    index: Optional[int] = None
+    reports: Reports
+
+
+class LocationRequest(LocationBase, geocoding.OSMGeocodingResults):
     status: int = 1
     requested_by: int = None
 

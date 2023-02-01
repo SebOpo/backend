@@ -194,8 +194,10 @@ def test_submit_location_report(
     pending_locations = r.json()
     assert pending_locations
 
-    random_reports = populate_reports()
-    random_reports["location_id"] = location.id
+    random_reports = {
+        "reports": populate_reports(),
+        "location_id": location.id
+    }
 
     r = client.put(
         f"{settings.API_V1_STR}/locations/submit-report",
@@ -273,10 +275,12 @@ def test_request_location_without_valid_address(
     assert requested_location["street_number"] is None
 
     # submit the reports with the updated location data
-    random_reports = populate_reports()
-    random_reports["location_id"] = requested_location["id"]
-    random_reports["street_number"] = "1"
-    random_reports["address"] = "Вулиця Тестова"
+    random_reports = {
+        "reports": populate_reports(),
+        "location_id": requested_location["id"],
+        "street_number": "1",
+        "address": "Test street"
+    }
 
     r = client.put(
         f"{settings.API_V1_STR}/locations/submit-report",
@@ -286,7 +290,7 @@ def test_request_location_without_valid_address(
     assert 200 <= r.status_code < 300
 
     updated_location = r.json()
-    assert updated_location["address"] == "Вулиця Тестова"
+    assert updated_location["address"] == "Test street"
     assert updated_location["street_number"] == "1"
     assert updated_location["status"] == 3
 

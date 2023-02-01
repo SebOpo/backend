@@ -50,8 +50,6 @@ async def allow_zone(
         db=db,
         model_id=zone_id
     )
-    if not result:
-        raise HTTPException(status_code=400, detail="No such zone.")
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

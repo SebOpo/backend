@@ -118,6 +118,45 @@ class CRUDLocation(
             .all()
         )
 
+    def submit_location_reports(
+        self, db: Session, obj_in: schemas.LocationUpdate, user: users.models.User
+    ) -> Any:
+        location = self.get(db, model_id=obj_in.location_id)
+        if not location:
+            return None
+        old_reports = location.reports
+        location_data = jsonable_encoder(location)
+
+        if isinstance(obj_in, dict):
+            update_data = obj_in
+        else:
+            update_data = obj_in.dict(exclude_unset=True)
+
+        for field in location_data:
+            if field in update_data:
+                setattr(location, field, update_data[field])
+
+        location.status = 3
+        location.report_expires = None
+        location.reported_by = user.id
+        user.last_activity = datetime.utcnow()
+
+        index_record = (
+            db.query(GeospatialIndex)
+                .filter(GeospatialIndex.location_id == obj_in.location_id)
+                .first()
+        )
+        index_record.status = 3
+
+        db.commit()
+        db.refresh(location)
+
+        changelog = create_changelog(
+            db, location_id=location.id, old_object=old_reports, new_object=obj_in.reports
+        )
+
+        return location
+
 
 locations = CRUDLocation(Location)
 
