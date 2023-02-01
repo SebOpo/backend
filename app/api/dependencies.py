@@ -14,7 +14,6 @@ from app.db.session import SessionLocal
 if TYPE_CHECKING:
     from app.components import users
 
-
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/login/token",
     scopes={
