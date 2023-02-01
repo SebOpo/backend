@@ -255,14 +255,14 @@ async def get_user_assigned_locations(
 
 @router.put("/submit-report")
 async def submit_location_report(
-    reports: schemas.LocationReports,
+    reports: schemas.LocationUpdate,
     db: Session = Depends(get_db),
     current_user: users.models.User = Security(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
 
-    location = crud.submit_location_reports(db, obj_in=reports, user_id=current_user.id)
+    location = crud.locations.submit_location_reports(db, obj_in=reports, user=current_user)
 
     if not location:
         raise HTTPException(
