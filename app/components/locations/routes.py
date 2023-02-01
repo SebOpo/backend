@@ -62,11 +62,14 @@ async def add_new_location(
         obj_in=geo_schemas.GeospatialRecordCreate(**(jsonable_encoder(new_location))),
     )
     # Adding location changelog record
-    changelog = changelogs.crud.create_changelog(
+    # TODO fix this weird naming
+    changelog = changelogs.crud.changelogs.create(
         db=db,
-        location_id=new_location.id,
-        old_object={},
-        new_object=new_location.reports,
+        obj_in=changelogs.schemas.ChangeLogCreate(
+            location_id=new_location.id,
+            old_flags={},
+            new_flags=new_location.reports
+        )
     )
     # TODO ROLLBACK IF NONE ADDED
     return new_location.to_json()
@@ -115,7 +118,7 @@ async def get_location_changelogs(
     location_id: int, db: Session = Depends(get_db)
 ) -> Any:
 
-    logs = changelogs.crud.get_changelogs(db, location_id)
+    logs = changelogs.crud.changelogs.get_changelogs(db, location_id)
 
     return logs
 

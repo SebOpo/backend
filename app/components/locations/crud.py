@@ -7,8 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from app.components import users
-from app.components.changelogs.crud import create_changelog
+from app.components import users, changelogs
 from app.components.geospatial.crud import create_index
 from app.components.geospatial.models import GeospatialIndex
 from app.components.locations import schemas
@@ -151,8 +150,14 @@ class CRUDLocation(
         db.commit()
         db.refresh(location)
 
-        changelog = create_changelog(
-            db, location_id=location.id, old_object=old_reports, new_object=obj_in.reports
+        # TODO fix this weird naming
+        changelog = changelogs.crud.changelogs.create(
+            db=db,
+            obj_in=changelogs.schemas.ChangeLogCreate(
+                location_id=location.id,
+                old_flags=old_reports,
+                new_flags=obj_in.reports
+            )
         )
 
         return location
@@ -226,9 +231,9 @@ def submit_location_reports(
     db.commit()
     db.refresh(location)
 
-    changelog = create_changelog(
-        db, location_id=location.id, old_object=old_reports, new_object=new_reports
-    )
+    # changelog = create_changelog(
+    #     db, location_id=location.id, old_object=old_reports, new_object=new_reports
+    # )
 
     # TODO rollback strategy if no changelog was created
 
