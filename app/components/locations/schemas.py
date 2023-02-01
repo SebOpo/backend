@@ -43,7 +43,7 @@ class LocationUpdate(BaseModel):
     reports: Reports
 
 
-class LocationRequest(LocationBase, geocoding.OSMGeocodingResults):
+class LocationRequest(LocationBase, geocoding.schemas.OSMGeocodingResults):
     status: int = 1
     requested_by: int = None
 
