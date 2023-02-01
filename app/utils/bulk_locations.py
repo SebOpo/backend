@@ -25,7 +25,7 @@ async def serialize_excel(spreadsheet: Worksheet) -> Dict:
                 "street_number": row[1],
                 "city": row[2],
                 "country": row[3],
-                "postcode": row[4],
+                "index": row[4],
                 "reports": {
                     "buildingCondition": {
                         "flag": row[5].lower(),
@@ -101,7 +101,7 @@ async def upload_locations(filepath: str, doctype: str):
 
         logger.debug("Adding {} locations to database".format(len(geocoded_locations)))
         db_locations = crud.locations.bulk_insert_locations(
-            db=SessionLocal(), locations=geocoded_locations
+            db=SessionLocal(), location_list=geocoded_locations
         )
         added_locations = db_locations.get("added")
         unprocessed_locations.append(loc for loc in db_locations.get("unprocessed"))

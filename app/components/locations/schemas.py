@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Dict
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, root_validator
 from typing_extensions import TypedDict
 
 from app.components import reports, geocoding
@@ -32,6 +32,15 @@ class LocationCreate(LocationBase):
     country: str
     index: int
     reports: Reports
+
+
+class BulkLocationCreate(LocationCreate):
+    index: Optional[int] = None
+
+    @root_validator(pre=True)
+    def string_convert(cls, values):
+        values["street_number"] = str(values["street_number"])
+        return values
 
 
 class LocationUpdate(BaseModel):

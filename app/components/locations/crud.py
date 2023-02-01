@@ -183,21 +183,11 @@ class CRUDLocation(
 
         for location in location_list:
             try:
-                db_obj = self.model(
-                    address=location.get("address"),
-                    index=location.get("postcode"),
-                    lat=location.get("lat"),
-                    lng=location.get("lng"),
-                    country=location.get("country"),
-                    city=location.get("city"),
-                    status=3,
-                    reports=location.get("reports"),
-                    street_number=location.get("street_number", None),
+                db_obj = self.create_new_location(
+                    db=db,
+                    location=schemas.BulkLocationCreate(**location),
+                    reported_by=reporting_user
                 )
-
-                db.add(db_obj)
-                db.commit()
-                db.refresh(db_obj)
 
                 index = geospatial_index.create(
                     db=db,
