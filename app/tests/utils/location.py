@@ -3,12 +3,12 @@ from typing import Dict
 from fastapi.testclient import TestClient
 
 from app.core.config import settings
-from app.crud import crud_location as crud
-from app.models import Location
+from app.components.locations.crud import locations
+from app.components.locations.models import Location
 
 
 def get_location_by_coords(db, loc_coords: Dict) -> Location:
-    return crud.get_location_by_coordinates(
+    return locations.get_location_by_coordinates(
         db, loc_coords.get("lat"), loc_coords.get("lng")
     )
 

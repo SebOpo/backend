@@ -4,9 +4,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.crud import crud_geospatial as geo_crud
-from app.crud.crud_location import locations
-from app.models.location import Location
+from app.components.geospatial import crud as geo_crud
+from app.components.locations.crud import locations
+from app.components.locations.models import Location
 from app.utils.populate_db import populate_reports
 
 
@@ -37,7 +37,7 @@ def test_add_new_location(
     location = locations.get(db=test_db, model_id=added_location["id"])
     assert location.status == 3
     assert added_location["address"] == location.address
-    geo_record = geo_crud.search_index_by_location_id(test_db, location_id=location.id)
+    geo_record = geo_crud.geospatial_index.search_index_by_location_id(test_db, location_id=location.id)
     assert geo_record.geohash
 
 
@@ -55,7 +55,7 @@ def test_request_location_info(
     location = locations.get(db=test_db, model_id=requested_location["id"])
     assert location.status == 1
     assert requested_location["address"] == location.address
-    geospatial_record = geo_crud.search_index_by_location_id(
+    geospatial_record = geo_crud.geospatial_index.search_index_by_location_id(
         test_db, location_id=location.id
     )
     assert geospatial_record
@@ -194,8 +194,10 @@ def test_submit_location_report(
     pending_locations = r.json()
     assert pending_locations
 
-    random_reports = populate_reports()
-    random_reports["location_id"] = location.id
+    random_reports = {
+        "reports": populate_reports(),
+        "location_id": location.id
+    }
 
     r = client.put(
         f"{settings.API_V1_STR}/locations/submit-report",
@@ -273,10 +275,12 @@ def test_request_location_without_valid_address(
     assert requested_location["street_number"] is None
 
     # submit the reports with the updated location data
-    random_reports = populate_reports()
-    random_reports["location_id"] = requested_location["id"]
-    random_reports["street_number"] = "1"
-    random_reports["address"] = "Вулиця Тестова"
+    random_reports = {
+        "reports": populate_reports(),
+        "location_id": requested_location["id"],
+        "street_number": "1",
+        "address": "Test street"
+    }
 
     r = client.put(
         f"{settings.API_V1_STR}/locations/submit-report",
@@ -286,9 +290,18 @@ def test_request_location_without_valid_address(
     assert 200 <= r.status_code < 300
 
     updated_location = r.json()
-    assert updated_location["address"] == "Вулиця Тестова"
+    assert updated_location["address"] == "Test street"
     assert updated_location["street_number"] == "1"
     assert updated_location["status"] == 3
 
-    # delete the location
-    # location_crud.delete_location(test_db, updated_location['id'])
+
+def test_get_recent_location_reports(
+        client: TestClient, test_db: Session
+) -> None:
+
+    r = client.get(f'{settings.API_V1_STR}/locations/recent-reports')
+    assert 200 <= r.status_code < 300
+
+    recent_reports = r.json()
+    assert isinstance(recent_reports, list)
+    assert len(recent_reports) <= 10

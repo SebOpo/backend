@@ -3,9 +3,9 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.components import users
+from app.components.organizations import crud
 from app.core.config import settings
-from app.crud import crud_organizations as crud
-from app.crud import crud_user as user_crud
 
 
 def test_create_organization(
@@ -105,7 +105,7 @@ def test_remove_organization_member(
     )
     assert 200 <= r.status_code < 300
 
-    master_user = user_crud.get(test_db, user_id=superuser_id)
+    master_user = users.crud.get(test_db, user_id=superuser_id)
     assert master_user.organization is None
 
     # organization = r.json()
@@ -132,7 +132,7 @@ def test_invite_organization_members(
     organization = r.json()
     assert organization["participants"]
 
-    master_user = user_crud.get(test_db, user_id=superuser_id)
+    master_user = users.crud.get(test_db, user_id=superuser_id)
     assert master_user.organization == master_organization_id
 
 

@@ -13,7 +13,7 @@ from app.db.base import Base
 from app.db.init_db import init_db
 from app.db.session import SessionLocal
 from app.main import app
-from app.models.location import Location
+from app.components.locations.models import Location
 from app.tests.utils.db_setup import get_url
 from app.tests.utils.location import (
     create_sample_location_request,
