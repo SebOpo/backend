@@ -12,6 +12,18 @@ AID_WORKER_SCOPES = [
 ]
 
 
+ORGANIZATIONAL_LEADER_SCOPES = [
+    "users:me",
+    "users:edit",
+    "locations:view",
+    "locations:edit",
+    "locations:create",
+    "organizations:view",
+    "organizations:edit",
+    "oauth:read",
+]
+
+
 def init_db(db: Session) -> users.models.User:
 
     for default_scope in oauth.models.default_scopes:
@@ -29,6 +41,23 @@ def init_db(db: Session) -> users.models.User:
         role=oauth.schemas.OauthRole(verbose_name="platform_administrator"),
         scope_list=admin_scopes,
     )
+
+    org_leader_scopes = []
+
+    for s in ORGANIZATIONAL_LEADER_SCOPES:
+        scope = oauth.crud.scopes.get_scope_by_scope_string(db=db, scope_string=s)
+        org_leader_scopes.append(scope)
+
+    org_leader_role = oauth.crud.roles.get_or_create_role(
+        db=db,
+        role=oauth.schemas.OauthRole(
+            verbose_name="organizational_leader",
+        ),
+        scope_list=org_leader_scopes
+    )
+
+    org_leader_role.scopes = org_leader_scopes
+    db.commit()
 
     aid_worker_scopes = []
 

@@ -35,12 +35,17 @@ async def create_organization(
 
 @router.post('/add')
 async def add_new_organization(
+        organization: schemas.OrganizationLeaderInvite,
         db: Session = Depends(get_db),
         current_active_user=Security(
             get_current_active_user, scopes=["organizations:create"]
         ),
 ) -> Any:
-    pass
+    existing_organization = crud.organizations.get_by_name(db, name=organization.name)
+    if existing_organization:
+        raise HTTPException(status_code=400, detail="Such organization already exists.")
+
+    new_organization = crud.organizations.create(db, obj_in=organization)
 
 
 @router.get("/all", response_model=List[schemas.OrganizationOut])

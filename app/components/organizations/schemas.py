@@ -13,6 +13,10 @@ class OrganizationBase(BaseModel):
     description: Optional[str] = None
 
 
+class OrganizationLeaderInvite(OrganizationBase):
+    emails: List[EmailStr]
+
+
 class OrganizationOut(OrganizationBase):
     id: int
     created_at: datetime.datetime

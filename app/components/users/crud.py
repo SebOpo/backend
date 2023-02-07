@@ -47,10 +47,11 @@ def create_invite(
     db: Session,
     *,
     obj_in: UserInvite,
-    organization: "organizations.models.Organization"
+    organization: "organizations.models.Organization",
+    role_name: str
 ) -> Optional[User]:
 
-    user_role = oauth.crud.roles.get_role_by_name(db=db, role_name="aid_worker")
+    user_role = oauth.crud.roles.get_role_by_name(db=db, role_name=role_name)
     if not user_role:
         return None
     if not organization:

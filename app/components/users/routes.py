@@ -55,6 +55,7 @@ async def generate_invite_link(
         db,
         obj_in=user,
         organization=organizations.crud.organizations.get(db, model_id=user.organization),
+        role_name="aid_worker"
     )
 
     if not new_user:
