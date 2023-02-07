@@ -16,6 +16,8 @@ class OrganizationBase(BaseModel):
 class OrganizationOut(OrganizationBase):
     id: int
     created_at: datetime.datetime
+    activated: bool
+    disabled: bool
     participants: Optional[List[users.schemas.UserRepresentation]]
 
     _utc_created_at = validator("created_at", allow_reuse=True)(convert_to_utc)

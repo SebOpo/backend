@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy import Column, String, Integer, DateTime, Boolean
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -10,9 +10,11 @@ class Organization(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     created_at = Column(DateTime, default=utcnow())
+    updated_at = Column(DateTime, default=utcnow())
 
     name = Column(String, nullable=False, unique=True)
     website = Column(String)
     description = Column(String)
-    # leader = Column(Integer, ForeignKey("user.id"))
+    activated = Column(Boolean, default=False)
+    disabled = Column(Boolean, default=False)
     participants = relationship("User")

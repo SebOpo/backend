@@ -17,12 +17,12 @@ async def create_organization(
         get_current_active_user, scopes=["organizations:create"]
     ),
 ) -> Any:
-    existing_organization = crud.get_by_name(db, organization.name)
+    existing_organization = crud.organizations.get_by_name(db, organization.name)
 
     if existing_organization:
         raise HTTPException(status_code=400, detail="Organization exists")
 
-    new_organization = crud.create(db, obj_in=organization)
+    new_organization = crud.organizations.create(db, obj_in=organization)
 
     if not new_organization:
         raise HTTPException(
@@ -31,6 +31,16 @@ async def create_organization(
         )
 
     return new_organization
+
+
+@router.post('/add')
+async def add_new_organization(
+        db: Session = Depends(get_db),
+        current_active_user=Security(
+            get_current_active_user, scopes=["organizations:create"]
+        ),
+) -> Any:
+    pass
 
 
 @router.get("/all", response_model=List[schemas.OrganizationOut])
@@ -42,7 +52,7 @@ async def get_organization_list(
         get_current_active_user, scopes=["organizations:view"]
     ),
 ) -> Any:
-    return crud.get_organizations_list(db, limit=limit, skip=page - 1)
+    return crud.organizations.get_organizations_list(db, limit=limit, skip=page - 1)
 
 
 @router.get("/search", response_model=List[schemas.OrganizationOut])
@@ -53,7 +63,7 @@ async def search_organizations_by_name(
         get_current_active_user, scopes=["organizations:view"]
     ),
 ) -> Any:
-    organizations = crud.get_by_substr(db, query.lower())
+    organizations = crud.organizations.get_by_substr(db, query.lower())
     if not organizations:
         return []
 
@@ -68,7 +78,7 @@ async def get_organization_by_id(
         get_current_active_user, scopes=["organizations:view"]
     ),
 ) -> Any:
-    organization = crud.get_by_id(db, organization_id=organization_id)
+    organization = crud.organizations.get(db, model_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -85,7 +95,7 @@ async def edit_organization_data(
     ),
 ) -> Any:
 
-    updated_organization = crud.edit_organization(
+    updated_organization = crud.organizations.edit_organization(
         db, organization_id=organization_id, obj_in=data
     )
     if not updated_organization:
@@ -103,11 +113,11 @@ async def invite_organization_members(
         get_current_active_user, scopes=["organizations:edit"]
     ),
 ) -> Any:
-    organization = crud.get_by_id(db, organization_id=organization_id)
+    organization = crud.organizations.get(db, model_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="Not found")
 
-    updated_organization = crud.add_members(
+    updated_organization = crud.organizations.add_members(
         db, organization_id=organization_id, user_emails=users.emails
     )
 
@@ -123,11 +133,11 @@ async def remove_organization_member(
         get_current_active_user, scopes=["organizations:edit"]
     ),
 ) -> Any:
-    organization = crud.get_by_id(db, organization_id=organization_id)
+    organization = crud.organizations.get(db, model_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="Not found")
 
-    updated_organization = crud.remove_members(
+    updated_organization = crud.organizations.remove_members(
         db, organization_id=organization_id, user_id=user_id
     )
     if not updated_organization:
@@ -146,11 +156,11 @@ async def delete_organization(
         get_current_active_user, scopes=["organizations:delete"]
     ),
 ) -> Any:
-    organization = crud.get_by_id(db, organization_id=organization_id)
+    organization = crud.organizations.get(db, model_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="Not found")
 
-    removed_organization = crud.delete_organization(db, organization_id=organization_id)
+    removed_organization = crud.organizations.delete_organization(db, organization_id=organization_id)
     if removed_organization:
         raise HTTPException(status_code=400, detail="Cannot perform such action")
 

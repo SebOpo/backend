@@ -13,7 +13,7 @@ def test_invite_existing_user(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    dim_org = org_crud.get_by_name(test_db, "DIM")
+    dim_org = org_crud.organizations.get_by_name(test_db, "DIM")
     assert dim_org
 
     # using a superuser email here
@@ -31,7 +31,7 @@ def test_invite_existing_user(
 def test_invite_new_user(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-    dim_org = org_crud.get_by_name(test_db, "DIM")
+    dim_org = org_crud.organizations.get_by_name(test_db, "DIM")
     assert dim_org
 
     payload = {"email": settings.TEST_USER_EMAIL, "organization": dim_org.id}

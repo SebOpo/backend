@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
 from app.components import oauth, users, organizations
-from app.components.organizations import crud as org_crud
 from app.core.config import settings
 
 AID_WORKER_SCOPES = [
@@ -50,9 +49,9 @@ def init_db(db: Session) -> users.models.User:
     db.commit()
 
     # creating the "DIM" organization
-    organization = org_crud.get_by_name(db, "DIM")
+    organization = organizations.crud.organizations.get_by_name(db, "DIM")
     if not organization:
-        organization = org_crud.create(
+        organization = organizations.crud.organizations.create(
             db,
             obj_in=organizations.schemas.OrganizationBase(name="DIM"),
         )

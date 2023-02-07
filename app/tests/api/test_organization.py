@@ -23,7 +23,7 @@ def test_create_organization(
 
     created_organization = r.json()
     assert created_organization
-    organization = crud.get_by_id(test_db, organization_id=created_organization["id"])
+    organization = crud.organizations.get(test_db, model_id=created_organization["id"])
     assert organization.name == created_organization["name"]
 
 
@@ -140,7 +140,7 @@ def test_delete_organization(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    organization_to_delete = crud.get_by_name(test_db, "TestOrg")
+    organization_to_delete = crud.organizations.get_by_name(test_db, "TestOrg")
 
     r = client.delete(
         f"{settings.API_V1_STR}/organizations/{organization_to_delete.id}",
