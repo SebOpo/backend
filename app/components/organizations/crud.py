@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
+from fastapi.encoders import jsonable_encoder
 
 from app.components import users
 from app.components.organizations import models, schemas
@@ -11,6 +12,7 @@ from app.core.base_crud import CRUDBase
 class CRUDOrganization(
     CRUDBase[models.Organization, schemas.OrganizationBase, schemas.OrganizationBase]
 ):
+
     def get_by_name(self, db: Session, name: str) -> Optional[models.Organization]:
         return (
             db.query(self.model).filter(self.model.name == name).first()

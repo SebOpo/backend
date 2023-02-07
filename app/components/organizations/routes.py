@@ -1,10 +1,14 @@
 from typing import Any, List
 
+import fastapi
 from fastapi import APIRouter, Depends, HTTPException, Security, status, Response
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
 from app.components.organizations import crud, schemas
+from app.components import users
+from app.core.config import settings
+from app.utils.email_sender import send_email
 
 router = APIRouter()
 
@@ -33,7 +37,7 @@ async def create_organization(
     return new_organization
 
 
-@router.post('/add')
+@router.post('/add', response_model=schemas.OrganizationOut)
 async def add_new_organization(
         organization: schemas.OrganizationLeaderInvite,
         db: Session = Depends(get_db),
@@ -45,7 +49,39 @@ async def add_new_organization(
     if existing_organization:
         raise HTTPException(status_code=400, detail="Such organization already exists.")
 
-    new_organization = crud.organizations.create(db, obj_in=organization)
+    new_organization = crud.organizations.create(db, obj_in=organization.dict(exclude={'emails'}))
+
+    for email in organization.emails:
+        new_user = users.crud.create_invite(
+            db,
+            obj_in=users.schemas.UserInvite(
+                email=email,
+                organization=new_organization.id
+            ),
+            organization=new_organization,
+            role_name="organizational_leader"
+        )
+        if settings.EMAILS_ENABLED:
+            send_email(
+                to_addresses=[new_user.email],
+                template_type="invite",
+                link="{}/registration/?access_token={}".format(
+                    settings.DOMAIN_ADDRESS, new_user.registration_token
+                ),
+            )
+
+    return new_organization
+
+
+@router.put('/activate', response_model=schemas.OrganizationOut)
+async def activate_organization(
+        organization: schemas.OrganizationBase,
+        db: Session = Depends(get_db),
+        current_active_user=Security(
+            get_current_active_user, scopes=["organizations:edit"]
+        ),
+) -> Any:
+    pass
 
 
 @router.get("/all", response_model=List[schemas.OrganizationOut])

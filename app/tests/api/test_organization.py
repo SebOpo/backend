@@ -27,6 +27,30 @@ def test_create_organization(
     assert organization.name == created_organization["name"]
 
 
+def test_add_new_organization(
+        client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
+) -> None:
+
+    payload = {
+        "name": "SampleOrg",
+        "emails": ["someemail@test.com", "someotheremail@test.com"]
+    }
+
+    r = client.post(
+        f"{settings.API_V1_STR}/organizations/add",
+        json=payload,
+        headers=superuser_token_headers
+    )
+    assert 200 <= r.status_code < 300
+    print(r.json())
+
+    created_organization = r.json()
+    db_org = crud.organizations.get(test_db, model_id=created_organization["id"])
+    assert db_org.name == created_organization["name"]
+    assert db_org.disabled == False
+    assert db_org.activated == False
+
+
 def test_get_all_organizations(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
