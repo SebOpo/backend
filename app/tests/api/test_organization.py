@@ -42,13 +42,34 @@ def test_add_new_organization(
         headers=superuser_token_headers
     )
     assert 200 <= r.status_code < 300
-    print(r.json())
+    # TODO modify this when we have our return value in endpoint
+    db_org = crud.organizations.get_by_name(test_db, "SampleOrg")
+    assert db_org
+    assert db_org.disabled is False
+    assert db_org.activated is False
 
-    created_organization = r.json()
-    db_org = crud.organizations.get(test_db, model_id=created_organization["id"])
-    assert db_org.name == created_organization["name"]
-    assert db_org.disabled == False
-    assert db_org.activated == False
+
+def test_edit_organization(
+    client: TestClient,
+    test_db: Session,
+    superuser_token_headers: Dict[str, str],
+    master_organization_id: int,
+) -> None:
+
+    payload = {"description": "Master organization", "website": "https://dim.org"}
+
+    r = client.put(
+        f"{settings.API_V1_STR}/organizations/{master_organization_id}/edit",
+        json=payload,
+        headers=superuser_token_headers,
+    )
+
+    assert 200 <= r.status_code < 300
+
+    response = r.json()
+    assert response["website"] == "https://dim.org"
+    db_org = crud.organizations.get(test_db, model_id=response["id"])
+    assert db_org.activated is True
 
 
 def test_get_all_organizations(
@@ -77,27 +98,6 @@ def test_get_organization_by_id(
     organization = r.json()
     assert organization["name"] == "DIM"
     assert organization["participants"]
-
-
-def test_edit_organization(
-    client: TestClient,
-    test_db: Session,
-    superuser_token_headers: Dict[str, str],
-    master_organization_id: int,
-) -> None:
-
-    payload = {"description": "Master organization", "website": "https://dim.org"}
-
-    r = client.put(
-        f"{settings.API_V1_STR}/organizations/{master_organization_id}/edit",
-        json=payload,
-        headers=superuser_token_headers,
-    )
-
-    assert 200 <= r.status_code < 300
-
-    response = r.json()
-    assert response["website"] == "https://dim.org"
 
 
 def test_search_organization(

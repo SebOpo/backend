@@ -36,6 +36,8 @@ class UserPasswordUpdate(BaseModel):
 class UserOrganizationDetails(BaseModel):
     id: int
     name: str
+    disabled: bool
+    activated: bool
 
     class Config:
         orm_mode = True

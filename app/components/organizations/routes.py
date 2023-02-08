@@ -37,7 +37,7 @@ async def create_organization(
     return new_organization
 
 
-@router.post('/add', response_model=schemas.OrganizationOut)
+@router.post('/add')
 async def add_new_organization(
         organization: schemas.OrganizationLeaderInvite,
         db: Session = Depends(get_db),
@@ -50,6 +50,8 @@ async def add_new_organization(
         raise HTTPException(status_code=400, detail="Such organization already exists.")
 
     new_organization = crud.organizations.create(db, obj_in=organization.dict(exclude={'emails'}))
+
+    added_users = []
 
     for email in organization.emails:
         new_user = users.crud.create_invite(
@@ -69,19 +71,11 @@ async def add_new_organization(
                     settings.DOMAIN_ADDRESS, new_user.registration_token
                 ),
             )
+        added_users.append(new_user)
 
-    return new_organization
-
-
-@router.put('/activate', response_model=schemas.OrganizationOut)
-async def activate_organization(
-        organization: schemas.OrganizationBase,
-        db: Session = Depends(get_db),
-        current_active_user=Security(
-            get_current_active_user, scopes=["organizations:edit"]
-        ),
-) -> Any:
-    pass
+    return {
+        user.email: user.registration_token for user in added_users
+    }
 
 
 @router.get("/all", response_model=List[schemas.OrganizationOut])
@@ -129,20 +123,22 @@ async def get_organization_by_id(
 @router.put("/{organization_id}/edit", response_model=schemas.OrganizationOut)
 async def edit_organization_data(
     organization_id: int,
-    data: schemas.OrganizationBase,
+    organization: schemas.OrganizationBase,
     db: Session = Depends(get_db),
     current_active_user=Security(
         get_current_active_user, scopes=["organizations:edit"]
     ),
 ) -> Any:
 
-    updated_organization = crud.organizations.edit_organization(
-        db, organization_id=organization_id, obj_in=data
-    )
-    if not updated_organization:
-        raise HTTPException(status_code=404, detail="Not found")
+    db_organization = crud.organizations.get(db, model_id=organization_id)
+    if not db_organization or current_active_user.organization != organization_id:
+        raise HTTPException(status_code=403, detail="Not permitted.")
 
-    return updated_organization
+    updated_org = crud.organizations.edit_organization(
+        db, organization_id=organization_id, obj_in=organization
+    )
+
+    return updated_org
 
 
 @router.put("/{organization_id}/invite", response_model=schemas.OrganizationOut)

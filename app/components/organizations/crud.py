@@ -50,6 +50,9 @@ class CRUDOrganization(
             # updated the organization with no explicit field declaration
             setattr(organization, field, data_to_update[field])
 
+        if not organization.activated:
+            organization.activated = True
+
         db.commit()
         db.refresh(organization)
         return organization

@@ -85,6 +85,10 @@ def init_db(db: Session) -> users.models.User:
             obj_in=organizations.schemas.OrganizationBase(name="DIM"),
         )
 
+    organization.disabled = False
+    organization.activated = True
+    db.commit()
+
     # creating first superuser
     user = users.crud.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
