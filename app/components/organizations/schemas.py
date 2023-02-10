@@ -21,6 +21,7 @@ class OrganizationLeaderInvite(OrganizationBase):
 class OrganizationOut(OrganizationBase):
     id: int
     created_at: datetime.datetime
+    # TODO Remove the nones when everything is tested
     activated: Optional[bool] = None
     disabled: Optional[bool] = None
     participants: Optional[List[users.schemas.UserRepresentation]]

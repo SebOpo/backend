@@ -85,6 +85,7 @@ def init_db(db: Session) -> users.models.User:
             obj_in=organizations.schemas.OrganizationBase(name="DIM"),
         )
 
+    # TODO find a way to remove this
     organization.disabled = False
     organization.activated = True
     db.commit()

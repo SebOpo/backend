@@ -36,8 +36,9 @@ class UserPasswordUpdate(BaseModel):
 class UserOrganizationDetails(BaseModel):
     id: int
     name: str
-    disabled: bool
-    activated: bool
+    # TODO Remove the nones when everything is tested
+    disabled: Optional[bool] = None
+    activated: Optional[bool] = None
 
     class Config:
         orm_mode = True
