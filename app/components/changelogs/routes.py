@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from fastapi import (
     APIRouter,
@@ -13,6 +13,16 @@ from app.components import users, changelogs
 
 
 router = APIRouter(prefix="/changelogs", tags=['changelogs'])
+
+
+@router.get("/{location_id}", response_model=List[changelogs.schemas.ChangelogOut])
+async def get_location_changelogs(
+    location_id: int, db: Session = Depends(get_db)
+) -> Any:
+
+    logs = changelogs.crud.changelogs.get_changelogs(db, location_id)
+
+    return logs
 
 
 @router.put("/visibility/{changelog_id}", response_model=changelogs.schemas.ChangelogOut)

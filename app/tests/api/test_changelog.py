@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.utils.populate_db import populate_reports
-from app.components import changelogs
 
 
 def test_get_location_changelogs(
@@ -32,7 +31,7 @@ def test_get_location_changelogs(
     added_location = r.json()
 
     r = client.get(
-        f"{settings.API_V1_STR}/locations/changelogs?location_id={added_location['id']}"
+        f"{settings.API_V1_STR}/changelogs/{added_location['id']}"
     )
     assert 200 <= r.status_code < 300
     location_changelogs = r.json()
@@ -66,7 +65,7 @@ def test_toggle_changelog_visibility(
     added_location = r.json()
 
     r = client.get(
-        f"{settings.API_V1_STR}/locations/changelogs?location_id={added_location['id']}"
+        f"{settings.API_V1_STR}/changelogs/{added_location['id']}"
     )
     assert 200 <= r.status_code < 300
     location_changelogs = r.json()
