@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from app.db.base_class import Base
 from app.db.utc_convertation import utcnow
@@ -43,3 +43,4 @@ class User(Base):
     password_renewal_token_expires = Column(DateTime)
 
     organization_model = relationship("Organization", viewonly=True)
+    changelogs = relationship("ChangeLog", lazy="joined", backref=backref("user"))

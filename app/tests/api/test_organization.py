@@ -80,6 +80,7 @@ def test_get_all_organizations(
         f"{settings.API_V1_STR}/organizations/all", headers=superuser_token_headers
     )
     assert 200 <= r.status_code < 300
+    assert isinstance(r.json(), list)
 
 
 def test_get_organization_by_id(

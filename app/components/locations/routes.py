@@ -67,7 +67,8 @@ async def add_new_location(
         obj_in=changelogs.schemas.ChangeLogCreate(
             location_id=new_location.id,
             old_flags={},
-            new_flags=new_location.reports
+            new_flags=new_location.reports,
+            submitted_by=current_user.id
         )
     )
     # TODO ROLLBACK IF NONE ADDED
