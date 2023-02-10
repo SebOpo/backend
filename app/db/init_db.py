@@ -21,6 +21,7 @@ ORGANIZATIONAL_LEADER_SCOPES = [
     "organizations:view",
     "organizations:edit",
     "oauth:read",
+    "changelogs:edit"
 ]
 
 

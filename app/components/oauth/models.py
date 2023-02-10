@@ -25,6 +25,7 @@ default_scopes = {
     "zones:create",
     "zones:edit",
     "zones:get",
+    "changelogs:edit"
 }
 
 
