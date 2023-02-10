@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.db.base_class import Base
@@ -14,6 +14,7 @@ class ChangeLog(Base):
     updated_at = Column(DateTime, default=utcnow())
     submitted_by = Column(Integer, ForeignKey(User.id, ondelete="SET NULL"), nullable=True)
     location_id = Column(Integer, ForeignKey("location.id", ondelete="CASCADE"))
+    hidden = Column(Boolean, default=False)
 
     old_flags = Column(JSONB, nullable=True)
     new_flags = Column(JSONB, nullable=True)
