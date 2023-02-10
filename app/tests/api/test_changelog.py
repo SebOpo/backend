@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.utils.populate_db import populate_reports
+from app.components import changelogs
 
 
 def test_get_location_changelogs(
@@ -40,3 +41,50 @@ def test_get_location_changelogs(
     for log in location_changelogs:
         assert log["new_flags"]
 
+
+def test_toggle_changelog_visibility(
+        client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
+) -> None:
+
+    payload = {
+        "lat": "49.2363517942312",
+        "lng": "28.46728473547312",
+        "street_number": 1,
+        "address": "Test changelog visibility",
+        "city": "Test city",
+        "country": "Ukraine",
+        "index": 21000,
+        "reports": populate_reports(),
+    }
+
+    r = client.post(
+        f"{settings.API_V1_STR}/locations/add",
+        json=payload,
+        headers=superuser_token_headers,
+    )
+    assert 200 <= r.status_code < 300
+    added_location = r.json()
+
+    r = client.get(
+        f"{settings.API_V1_STR}/locations/changelogs?location_id={added_location['id']}"
+    )
+    assert 200 <= r.status_code < 300
+    location_changelogs = r.json()
+
+    r = client.put(
+        f"{settings.API_V1_STR}/changelogs/visibility/{location_changelogs[0]['id']}",
+        headers=superuser_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+    hidden_changelog = r.json()
+    assert hidden_changelog["hidden"] is True
+
+    r = client.put(
+        f"{settings.API_V1_STR}/changelogs/visibility/{location_changelogs[0]['id']}",
+        headers=superuser_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+    visible_changelog = r.json()
+    assert visible_changelog["hidden"] is False

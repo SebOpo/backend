@@ -21,6 +21,7 @@ class ChangelogOut(ChangeLogBase):
     id: int
     created_at: datetime
     user: schemas.UserRepresentation
+    hidden: bool
 
     _utc_created_at = validator("created_at", allow_reuse=True)(convert_to_utc)
 

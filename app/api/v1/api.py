@@ -10,6 +10,7 @@ from app.components import (
     guests,
     sessions,
     geocoding,
+    changelogs
 )
 
 api_router = APIRouter()
@@ -29,3 +30,4 @@ api_router.include_router(guests.routes.router, prefix="/guest", tags=["guest-us
 api_router.include_router(
     geocoding.routes.router, prefix="/geocode", tags=["geocoding"]
 )
+api_router.include_router(changelogs.routes.router)
