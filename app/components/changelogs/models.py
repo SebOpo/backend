@@ -14,7 +14,6 @@ class ChangeLog(Base):
     updated_at = Column(DateTime, default=utcnow())
     submitted_by = Column(Integer, ForeignKey(User.id, ondelete="SET NULL"), nullable=True)
     location_id = Column(Integer, ForeignKey("location.id", ondelete="CASCADE"))
-    action_type = Column(Integer, nullable=False)
 
     old_flags = Column(JSONB, nullable=True)
     new_flags = Column(JSONB, nullable=True)

@@ -14,14 +14,12 @@ class ChangeLogBase(BaseModel):
 
 class ChangeLogCreate(ChangeLogBase):
     location_id: int
-    action_type: int = 1  # Subject to remove.
     submitted_by: int
 
 
 class ChangelogOut(ChangeLogBase):
     id: int
     created_at: datetime
-    action_type: int
     user: schemas.UserRepresentation
 
     _utc_created_at = validator("created_at", allow_reuse=True)(convert_to_utc)
