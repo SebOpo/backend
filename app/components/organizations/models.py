@@ -16,6 +16,8 @@ class Organization(Base):
     website = Column(String)
     description = Column(String)
     address = Column(String)
+    country = Column(String)
+    city = Column(String)
     activated = Column(Boolean, default=False)
     disabled = Column(Boolean, default=False)
     participants = relationship("User")
