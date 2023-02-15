@@ -18,7 +18,7 @@ logger = logging.getLogger(settings.PROJECT_NAME)
 
 
 class CRUDLocation(
-    CRUDBase[Location, schemas.LocationRequest, schemas.LocationReports]
+    CRUDBase[Location, schemas.LocationRequest, schemas.LocationUpdate]
 ):
     def create_new_location(
         self,

@@ -4,7 +4,7 @@ from typing import Optional, Dict, Any
 from pydantic import BaseModel, validator, root_validator
 
 from app.utils.validators import convert_to_utc
-from app.components.users import schemas
+from app.components import users, locations
 
 
 class ChangeLogBase(BaseModel):
@@ -34,10 +34,14 @@ class ChangeLogSearch(BaseModel):
 class ChangelogOut(ChangeLogBase):
     id: int
     created_at: datetime
-    user: schemas.UserRepresentation
+    user: users.schemas.UserRepresentation
     hidden: bool
 
     _utc_created_at = validator("created_at", allow_reuse=True)(convert_to_utc)
 
     class Config:
         orm_mode = True
+
+
+class OrganizationChangelogOut(ChangelogOut):
+    location: locations.schemas.LocationOut

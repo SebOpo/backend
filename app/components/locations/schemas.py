@@ -81,17 +81,3 @@ class LocationOut(BaseModel):
     class Config:
         orm_mode = True
 
-
-# TODO convert to dataclasses with default vals
-class LocationReports(BaseModel):
-    location_id: int
-    street_number: Optional[str] = None
-    address: Optional[str] = None
-    city: Optional[str] = None
-    index: Optional[int] = None
-    buildingCondition: reports.schemas.BuildingReport
-    electricity: reports.schemas.ElectricityReport
-    carEntrance: reports.schemas.CarEntranceReport
-    water: reports.schemas.WaterReport
-    fuelStation: reports.schemas.FuelStationReport
-    hospital: reports.schemas.HospitalReport

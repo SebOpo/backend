@@ -25,7 +25,7 @@ async def get_location_changelogs(
     return logs
 
 
-@router.get("/search/")
+@router.get("/search/", response_model=List[changelogs.schemas.OrganizationChangelogOut])
 async def search_changelogs(
         search_params: changelogs.schemas.ChangeLogSearch = Depends(),
         db: Session = Depends(get_db)
