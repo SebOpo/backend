@@ -23,6 +23,9 @@ class ChangeLogSearch(BaseModel):
     admin_id: Optional[int] = None
     query: Optional[str] = None
     date_min: Optional[Any] = None
+    # The timedelta here is used for testing purposes.
+    # The test won't pass with a default value, because the record is actually created after the api call.
+    # Need to change it later I guess.
     date_max: Optional[Any] = int((datetime.utcnow() + timedelta(minutes=15)).timestamp())
 
     @validator("date_min", "date_max", pre=True)
