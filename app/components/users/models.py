@@ -44,3 +44,4 @@ class User(Base):
 
     organization_model = relationship("Organization", viewonly=True)
     changelogs = relationship("ChangeLog", lazy="joined", backref=backref("user"))
+    # changelogs = relationship("ChangeLog", lazy="joined", backref=backref("user"))

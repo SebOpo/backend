@@ -25,6 +25,18 @@ async def get_location_changelogs(
     return logs
 
 
+@router.get("/search/")
+async def search_changelogs(
+        search_params: changelogs.schemas.ChangeLogSearch = Depends(),
+        db: Session = Depends(get_db)
+) -> Any:
+    print(search_params)
+    changelog_list = changelogs.crud.changelogs.search_changelogs(
+        db, **search_params.dict()
+    )
+    return changelog_list
+
+
 @router.put("/visibility/{changelog_id}", response_model=changelogs.schemas.ChangelogOut)
 async def toggle_visibility(
         changelog_id: int,

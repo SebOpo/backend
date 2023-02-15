@@ -1,8 +1,13 @@
-from sqlalchemy import desc
+import datetime
+from typing import List
+
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from app.components.changelogs import models, schemas
+from app.components import users
+from app.components import locations
 from app.core.base_crud import CRUDBase
 
 
@@ -16,6 +21,31 @@ class CRUDChangelog(
                 .order_by(desc(self.model.created_at))
                 .all()
         )
+
+    def search_changelogs(
+            self,
+            db: Session,
+            organization_id: int = None,
+            admin_id: int = None,
+            query: str = None,
+            date_min: datetime.datetime = None,
+            date_max: datetime.datetime = datetime.datetime.utcnow()
+    ) -> List[models.ChangeLog]:
+
+        print(admin_id)
+
+        filters = []
+        if organization_id:
+            filters.append(self.model.user.organization == organization_id)
+        if admin_id:
+            filters.append(self.model.submitted_by == admin_id)
+        if query:
+            filters.append(func.concat(self.model.location.address, self.model.location.street_number) == query)
+        if date_min:
+            filters.append(self.model.created_at.between(date_min, date_max))
+        else:
+            filters.append(self.model.created_at <= date_max)
+        return db.query(self.model).filter(*filters).all()
 
     def toggle_changelog_visibility(self, db: Session, changelog_id: int) -> models.ChangeLog:
         db_changelog = self.get(db, model_id=changelog_id)
