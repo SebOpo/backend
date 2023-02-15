@@ -2,7 +2,7 @@ import datetime
 from typing import List
 
 from sqlalchemy import desc, func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
 from app.components.changelogs import models, schemas
@@ -32,15 +32,19 @@ class CRUDChangelog(
             date_max: datetime.datetime = datetime.datetime.utcnow()
     ) -> List[models.ChangeLog]:
 
-        print(admin_id)
-
         filters = []
         if organization_id:
-            filters.append(self.model.user.organization == organization_id)
+            filters.append(self.model.user.has(models.User.organization == organization_id))
         if admin_id:
             filters.append(self.model.submitted_by == admin_id)
         if query:
-            filters.append(func.concat(self.model.location.address, self.model.location.street_number) == query)
+            filters.append(
+                self.model.location.has(
+                    func.concat(
+                        locations.models.Location.address, locations.models.Location.street_number
+                    ).contains(query)
+                )
+            )
         if date_min:
             filters.append(self.model.created_at.between(date_min, date_max))
         else:

@@ -30,7 +30,6 @@ async def search_changelogs(
         search_params: changelogs.schemas.ChangeLogSearch = Depends(),
         db: Session = Depends(get_db)
 ) -> Any:
-    print(search_params)
     changelog_list = changelogs.crud.changelogs.search_changelogs(
         db, **search_params.dict()
     )

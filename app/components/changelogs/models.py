@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 from app.db.utc_convertation import utcnow
@@ -18,3 +19,6 @@ class ChangeLog(Base):
 
     old_flags = Column(JSONB, nullable=True)
     new_flags = Column(JSONB, nullable=True)
+
+    user = relationship("User", foreign_keys=[submitted_by])
+    location = relationship("Location", foreign_keys=[location_id])

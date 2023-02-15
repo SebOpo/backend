@@ -35,7 +35,6 @@ class Location(Base):
     lat = Column(Float)
     lng = Column(Float)
     reports = Column(JSONB)  # Should we create a separate table for this??
-    changelogs = relationship("ChangeLog", lazy="joined", backref=backref("location"))
 
     reported_by_model = relationship("User", foreign_keys="Location.reported_by")
 

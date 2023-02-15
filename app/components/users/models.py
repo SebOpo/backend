@@ -33,7 +33,6 @@ class User(Base):
     email_confirmed = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=True)
 
-    # permissions = Column(JSONB, default={})
     role = Column(String, nullable=False)
 
     registration_token = Column(String)
@@ -43,5 +42,3 @@ class User(Base):
     password_renewal_token_expires = Column(DateTime)
 
     organization_model = relationship("Organization", viewonly=True)
-    changelogs = relationship("ChangeLog", lazy="joined", backref=backref("user"))
-    # changelogs = relationship("ChangeLog", lazy="joined", backref=backref("user"))
