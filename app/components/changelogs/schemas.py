@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import calendar
 from typing import Optional, Dict, Any
 
 from pydantic import BaseModel, validator, root_validator
@@ -22,7 +23,7 @@ class ChangeLogSearch(BaseModel):
     admin_id: Optional[int] = None
     query: Optional[str] = None
     date_min: Optional[Any] = None
-    date_max: Optional[Any] = datetime.utcnow()
+    date_max: Optional[Any] = int((datetime.utcnow() + timedelta(minutes=15)).timestamp())
 
     @validator("date_min", "date_max", pre=True)
     def parse_dates(cls, v):

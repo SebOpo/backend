@@ -32,6 +32,8 @@ class CRUDChangelog(
             date_max: datetime.datetime = datetime.datetime.utcnow()
     ) -> List[models.ChangeLog]:
 
+        print(date_max)
+
         filters = []
         if organization_id:
             filters.append(self.model.user.has(models.User.organization == organization_id))
