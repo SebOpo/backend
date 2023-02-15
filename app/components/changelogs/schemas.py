@@ -45,3 +45,10 @@ class ChangelogOut(ChangeLogBase):
 
 class OrganizationChangelogOut(ChangelogOut):
     location: locations.schemas.LocationOut
+
+    @validator('location', pre=True)
+    def assemble_location(cls, v):
+        # TODO find a better approach
+        # This happens due to the location in the relationship not having the "position" attribute.
+        return v.to_json()
+
