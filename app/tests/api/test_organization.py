@@ -56,7 +56,7 @@ def test_edit_organization(
     master_organization_id: int,
 ) -> None:
 
-    payload = {"description": "Master organization", "website": "https://dim.org"}
+    payload = {"description": "Master organization", "website": "https://dim.org", "country": "Ukraine", "city": "Kiev"}
 
     r = client.put(
         f"{settings.API_V1_STR}/organizations/{master_organization_id}/edit",
