@@ -15,6 +15,7 @@ AID_WORKER_SCOPES = [
 ORGANIZATIONAL_LEADER_SCOPES = [
     "users:me",
     "users:edit",
+    "users:disable",
     "locations:view",
     "locations:edit",
     "locations:create",

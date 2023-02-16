@@ -14,6 +14,7 @@ class OrganizationBase(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     country: Optional[str] = None
+    logo_url: Optional[str] = None
 
 
 class OrganizationLeaderInvite(OrganizationBase):

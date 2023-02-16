@@ -203,6 +203,27 @@ async def change_user_role(
     return updated_user
 
 
+@router.put("/disable", response_model=schemas.UserOut)
+async def toggle_user_activity(
+        user_id: int,
+        current_user: models.User = Security(
+            get_current_active_user, scopes=["users:disable"]
+        ),
+        db: Session = Depends(get_db)
+) -> Any:
+
+    user = crud.get(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if current_user.role == "organizational_leader" and current_user.organization != user.organization:
+        raise HTTPException(status_code=403, detail="Not allowed")
+
+    updated_user = crud.toggle_user_is_active(db, user)
+
+    return updated_user
+
+
 # TODO do we need this? Is the edit permission right for such operation (reserved route for tests)
 @router.delete("/delete-me")
 async def delete_me(

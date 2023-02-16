@@ -197,6 +197,13 @@ def authenticate(db: Session, *, email: str, password: str) -> Optional[User]:
     return user
 
 
+def toggle_user_is_active(db: Session, user: User) -> User:
+    user.is_active = not user.is_active
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 def delete_user(db: Session, user_id: int) -> Optional[User]:
     user = get(db, user_id=user_id)
     if not user:
