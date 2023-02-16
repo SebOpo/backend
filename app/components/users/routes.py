@@ -203,7 +203,7 @@ async def change_user_role(
     return updated_user
 
 
-@router.put("/disable", response_model=schemas.UserOut)
+@router.put("/toggle-activity", response_model=schemas.UserOut)
 async def toggle_user_activity(
         user_id: int,
         current_user: models.User = Security(
@@ -212,7 +212,7 @@ async def toggle_user_activity(
         db: Session = Depends(get_db)
 ) -> Any:
 
-    user = crud.get(db, user_id)
+    user = crud.get(db, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Not found")
 

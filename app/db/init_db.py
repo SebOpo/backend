@@ -38,11 +38,14 @@ def init_db(db: Session) -> users.models.User:
 
     admin_scopes = oauth.crud.scopes.get_all(db)
 
-    oauth.crud.roles.get_or_create_role(
+    admin_role = oauth.crud.roles.get_or_create_role(
         db=db,
         role=oauth.schemas.OauthRole(verbose_name="platform_administrator"),
         scope_list=admin_scopes,
     )
+
+    admin_role.scopes = admin_scopes
+    db.commit()
 
     org_leader_scopes = []
 
@@ -58,6 +61,7 @@ def init_db(db: Session) -> users.models.User:
         scope_list=org_leader_scopes
     )
 
+    # TODO refactor.
     org_leader_role.scopes = org_leader_scopes
     db.commit()
 
