@@ -222,6 +222,41 @@ def test_user_password_reset(
     # assert not db_user.password_renewal_token_expires
 
 
+def test_toggle_user_activity(
+        client: TestClient,
+        test_db: Session,
+        superuser_token_headers: Dict[str, str],
+        aid_worker_token_headers: Dict[str, str]
+) -> None:
+
+    aid_worker_id = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL).id
+    r = client.put(
+        f"{settings.API_V1_STR}/users/toggle-activity?user_id={aid_worker_id}",
+        headers=superuser_token_headers
+    )
+    assert 200 <= r.status_code < 300
+    disabled_user = r.json()
+    assert disabled_user["is_active"] == False
+
+    r = client.get(
+        f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers
+    )
+    assert r.status_code == 400
+
+    r = client.put(
+        f"{settings.API_V1_STR}/users/toggle-activity?user_id={aid_worker_id}",
+        headers=superuser_token_headers
+    )
+    assert 200 <= r.status_code < 300
+    disabled_user = r.json()
+    assert disabled_user["is_active"] == True
+
+    r = client.get(
+        f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers
+    )
+    assert 200 <= r.status_code < 300
+
+
 def test_user_delete_me(
     client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
 ) -> None:
