@@ -19,6 +19,9 @@ class Organization(Base):
     country = Column(String)
     city = Column(String)
     logo_url = Column(String)
+
     activated = Column(Boolean, default=False)
     disabled = Column(Boolean, default=False)
+    disabled_for = Column(String)
+
     participants = relationship("User")

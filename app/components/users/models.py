@@ -32,6 +32,7 @@ class User(Base):
 
     email_confirmed = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=True)
+    disabled_for = Column(String, nullable=True)
 
     role = Column(String, nullable=False)
 
