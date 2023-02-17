@@ -195,8 +195,11 @@ async def change_user_role(
     ),
     db: Session = Depends(get_db),
 ) -> Any:
-    updated_user = crud.change_role(db, user_id=user_id, role=role)
+    user = crud.users.get(db, model_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Not found")
 
+    updated_user = crud.users.change_role(db, user=user, role=role)
     if not updated_user:
         raise HTTPException(status_code=400, detail="Cannot update user")
 
@@ -212,7 +215,7 @@ async def toggle_user_activity(
         db: Session = Depends(get_db)
 ) -> Any:
 
-    user = crud.get(db, user_id=user_id)
+    user = crud.users.get(db, model_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -232,7 +235,7 @@ async def delete_me(
     ),
     db: Session = Depends(get_db),
 ) -> Any:
-    deleted_user = crud.delete_user(db, current_user.id)
+    deleted_user = crud.users.delete(db, model_id=current_user.id)
 
     if deleted_user:
         raise HTTPException(status_code=400, detail="Cannot perform such action")

@@ -130,7 +130,7 @@ def test_remove_organization_member(
     )
     assert 200 <= r.status_code < 300
 
-    master_user = users.crud.get(test_db, user_id=superuser_id)
+    master_user = users.crud.users.get(test_db, model_id=superuser_id)
     assert master_user.organization is None
 
     # organization = r.json()
@@ -157,7 +157,7 @@ def test_invite_organization_members(
     organization = r.json()
     assert organization["participants"]
 
-    master_user = users.crud.get(test_db, user_id=superuser_id)
+    master_user = users.crud.users.get(test_db, model_id=superuser_id)
     assert master_user.organization == master_organization_id
 
 

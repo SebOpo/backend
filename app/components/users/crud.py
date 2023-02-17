@@ -8,9 +8,29 @@ from app.components.users.models import User
 from app.components.users.schemas import UserCreate, UserBase, UserInvite
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password, create_access_token
+from app.core.base_crud import CRUDBase
 
 if TYPE_CHECKING:
     from app.components import organizations
+
+
+class CRUDUser(
+    CRUDBase[User, UserCreate, UserBase]
+):
+    def change_role(self, db: Session, user: User, role: str) -> Optional[User]:
+
+        role = oauth.crud.roles.get_role_by_name(db, role)
+        if not role:
+            return None
+
+        user.role = role.verbose_name
+
+        db.commit()
+        db.refresh(user)
+        return user
+
+
+users = CRUDUser(User)
 
 
 def get_by_email(db: Session, *, email: str) -> Optional[User]:
@@ -202,13 +222,3 @@ def toggle_user_is_active(db: Session, user: User) -> User:
     db.commit()
     db.refresh(user)
     return user
-
-
-def delete_user(db: Session, user_id: int) -> Optional[User]:
-    user = get(db, user_id=user_id)
-    if not user:
-        return None
-
-    db.delete(user)
-    db.commit()
-    return get(db, user_id=user_id)
