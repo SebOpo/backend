@@ -37,10 +37,6 @@ def get_by_email(db: Session, *, email: str) -> Optional[User]:
     return db.query(User).filter(User.email == email).first()
 
 
-def get(db: Session, *, user_id: int) -> Optional[User]:
-    return db.query(User).get(user_id)
-
-
 def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
 
     user_role = oauth.crud.roles.get_role_by_name(db, role)
@@ -183,24 +179,6 @@ def confirm_password_reset(
     user.hashed_password = get_password_hash(new_password)
     user.password_renewal_token = None
     user.password_renewal_token_expires = None
-
-    db.commit()
-    db.refresh(user)
-    return user
-
-
-def change_role(db: Session, user_id: int, role: str) -> Optional[User]:
-
-    user = get(db, user_id=user_id)
-    if not user:
-        return None
-
-    role = oauth.crud.roles.get_role_by_name(db, role)
-    if not role:
-        return None
-
-    user.role = role.verbose_name
-    # user.permissions = role.permissions
 
     db.commit()
     db.refresh(user)
