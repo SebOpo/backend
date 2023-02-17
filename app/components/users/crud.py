@@ -17,6 +17,51 @@ if TYPE_CHECKING:
 class CRUDUser(
     CRUDBase[User, UserCreate, UserBase]
 ):
+
+    def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
+        return db.query(self.model).filter(self.model.email == email).first()
+
+    def authenticate(self, db: Session, *, email: str, password: str) -> Optional[User]:
+
+        user = self.get_by_email(db, email=email)
+        if not user:
+            return None
+        if not verify_password(password, user.hashed_password):
+            return None
+        return user
+
+    def update_info(
+            self, db: Session, *, obj_in: UserBase, user_email: str
+    ) -> Optional[User]:
+        user = self.get_by_email(db, email=user_email)
+        if not user:
+            return None
+
+        data_to_update = obj_in.dict(exclude_unset=True)
+        for field in data_to_update:
+            setattr(user, field, data_to_update[field])
+
+        db.commit()
+        db.refresh(user)
+        return user
+
+    def reset_password(self, db: Session, user_email: str) -> Optional[User]:
+
+        user = self.get_by_email(db, email=user_email)
+        if not user:
+            return None
+
+        user.password_renewal_token = create_access_token(
+            subject=user_email, scopes=["users:me"]
+        )
+        user.password_renewal_token_expires = datetime.now() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+
+        db.commit()
+        db.refresh(user)
+        return user
+
     def change_role(self, db: Session, user: User, role: str) -> Optional[User]:
 
         role = oauth.crud.roles.get_role_by_name(db, role)
@@ -123,45 +168,15 @@ def confirm_registration(
     return invited_user
 
 
-def update_info(db: Session, *, obj_in: UserBase, user_email: str) -> User:
-    user = get_by_email(db, email=user_email)
-
-    user.email = obj_in.email
-    user.full_name = obj_in.full_name
-    user.username = obj_in.username
-
-    db.commit()
-    db.refresh(user)
-    return user
-
-
 def update_password(
     db: Session, user_email: str, old_password: str, new_password: str
 ) -> Optional[User]:
 
-    user = authenticate(db, email=user_email, password=old_password)
+    user = users.authenticate(db, email=user_email, password=old_password)
     if not user:
         return None
 
     user.hashed_password = get_password_hash(new_password)
-    db.commit()
-    db.refresh(user)
-    return user
-
-
-def reset_password(db: Session, user_email: str) -> Optional[User]:
-
-    user = get_by_email(db, email=user_email)
-    if not user:
-        return None
-
-    user.password_renewal_token = create_access_token(
-        subject=user_email, scopes=["users:me"]
-    )
-    user.password_renewal_token_expires = datetime.now() + timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-
     db.commit()
     db.refresh(user)
     return user
@@ -182,16 +197,6 @@ def confirm_password_reset(
 
     db.commit()
     db.refresh(user)
-    return user
-
-
-def authenticate(db: Session, *, email: str, password: str) -> Optional[User]:
-
-    user = get_by_email(db, email=email)
-    if not user:
-        return None
-    if not verify_password(password, user.hashed_password):
-        return None
     return user
 
 

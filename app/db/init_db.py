@@ -97,7 +97,7 @@ def init_db(db: Session) -> users.models.User:
     db.commit()
 
     # creating first superuser
-    user = users.crud.get_by_email(db, email=settings.FIRST_SUPERUSER)
+    user = users.crud.users.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
         new_user = users.schemas.UserCreate(
             email=settings.FIRST_SUPERUSER,

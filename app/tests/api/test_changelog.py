@@ -98,7 +98,7 @@ def test_get_changelogs_by_admin_id(
         client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    admin_id = user_crud.get_by_email(test_db, email=settings.FIRST_SUPERUSER).id
+    admin_id = user_crud.users.get_by_email(test_db, email=settings.FIRST_SUPERUSER).id
 
     r = client.get(f"{settings.API_V1_STR}/changelogs/search/?admin_id={admin_id}")
     assert 200 <= r.status_code < 300
@@ -112,7 +112,7 @@ def test_get_changelogs_by_org_id(
         client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    org_id = user_crud.get_by_email(test_db, email=settings.FIRST_SUPERUSER).organization
+    org_id = user_crud.users.get_by_email(test_db, email=settings.FIRST_SUPERUSER).organization
 
     r = client.get(f"{settings.API_V1_STR}/changelogs/search/?organization_id={org_id}")
     assert 200 <= r.status_code < 300

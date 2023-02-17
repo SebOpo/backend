@@ -20,7 +20,7 @@ async def register_user(
         get_current_active_user, scopes=["users:create"]
     ),
 ) -> Any:
-    existing_user = crud.get_by_email(db, email=user.email)
+    existing_user = crud.users.get_by_email(db, email=user.email)
     if existing_user:
         raise HTTPException(status_code=400, detail="User exists")
 
@@ -47,7 +47,7 @@ async def generate_invite_link(
     # if user.email == settings.TEST_USER_EMAIL:
     #     raise HTTPException(status_code=400, detail='This email is reserved.')
 
-    existing_user = crud.get_by_email(db, email=user.email)
+    existing_user = crud.users.get_by_email(db, email=user.email)
     if existing_user:
         raise HTTPException(status_code=400, detail="User exists")
 
@@ -120,7 +120,7 @@ async def patch_user_info(
     ),
     db: Session = Depends(get_db),
 ) -> Any:
-    updated_user = crud.update_info(
+    updated_user = crud.users.update_info(
         db, obj_in=updated_info, user_email=current_user.email
     )
 
@@ -152,7 +152,7 @@ async def change_user_password(
 @router.put("/password-reset")
 async def reset_user_password(user_email: str, db: Session = Depends(get_db)) -> Any:
 
-    user = crud.reset_password(db, user_email)
+    user = crud.users.reset_password(db, user_email)
     if not user:
         raise HTTPException(status_code=400, detail="No such user.")
 

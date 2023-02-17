@@ -21,7 +21,7 @@ async def login_user(
     # Base Oauth2 Form only has 2 fields, username and password, so we are using email here,
     # but passing it as a username.
 
-    user = users.crud.authenticate(
+    user = users.crud.users.authenticate(
         db=db, email=form_data.username, password=form_data.password
     )
 
