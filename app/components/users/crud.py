@@ -45,6 +45,66 @@ class CRUDUser(
         db.refresh(user)
         return user
 
+    def verify_registration_token(self, db: Session, access_token: str) -> Optional[User]:
+        invited_user = (
+            db.query(self.model).filter(self.model.registration_token == access_token).first()
+        )
+
+        if not invited_user or datetime.now() > invited_user.registration_token_expires:
+            return None
+
+        return invited_user
+
+    def confirm_registration(
+            self, db: Session, *, access_token: str, obj_in: UserCreate
+    ) -> Optional[User]:
+
+        invited_user = self.verify_registration_token(db, access_token)
+        if not invited_user:
+            return None
+
+        invited_user.registration_token = None
+        invited_user.registration_token_expires = None
+        invited_user.full_name = obj_in.full_name
+        invited_user.username = obj_in.username
+        invited_user.hashed_password = get_password_hash(obj_in.password)
+        invited_user.is_active = True
+        invited_user.email_confirmed = True
+
+        db.commit()
+        db.refresh(invited_user)
+        return invited_user
+
+    def confirm_password_reset(
+            self, db: Session, renewal_token: str, new_password: str
+    ) -> Optional[User]:
+
+        user = db.query(self.model).filter(self.model.password_renewal_token == renewal_token).first()
+
+        if not user or datetime.now() > user.password_renewal_token_expires:
+            return None
+
+        user.hashed_password = get_password_hash(new_password)
+        user.password_renewal_token = None
+        user.password_renewal_token_expires = None
+
+        db.commit()
+        db.refresh(user)
+        return user
+
+    def update_password(
+            self, db: Session, user_email: str, old_password: str, new_password: str
+    ) -> Optional[User]:
+
+        user = self.authenticate(db, email=user_email, password=old_password)
+        if not user:
+            return None
+
+        user.hashed_password = get_password_hash(new_password)
+        db.commit()
+        db.refresh(user)
+        return user
+
     def reset_password(self, db: Session, user_email: str) -> Optional[User]:
 
         user = self.get_by_email(db, email=user_email)
@@ -74,12 +134,14 @@ class CRUDUser(
         db.refresh(user)
         return user
 
+    def toggle_user_is_active(self, db: Session, user: User) -> User:
+        user.is_active = not user.is_active
+        db.commit()
+        db.refresh(user)
+        return user
+
 
 users = CRUDUser(User)
-
-
-def get_by_email(db: Session, *, email: str) -> Optional[User]:
-    return db.query(User).filter(User.email == email).first()
 
 
 def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
@@ -134,74 +196,3 @@ def create_invite(
     db.commit()
     db.refresh(db_obj)
     return db_obj
-
-
-def verify_registration_token(db: Session, access_token: str) -> Optional[User]:
-    invited_user = (
-        db.query(User).filter(User.registration_token == access_token).first()
-    )
-
-    if not invited_user or datetime.now() > invited_user.registration_token_expires:
-        return None
-
-    return invited_user
-
-
-def confirm_registration(
-    db: Session, *, access_token: str, obj_in: UserCreate
-) -> Optional[User]:
-
-    invited_user = verify_registration_token(db, access_token)
-    if not invited_user:
-        return None
-
-    invited_user.registration_token = None
-    invited_user.registration_token_expires = None
-    invited_user.full_name = obj_in.full_name
-    invited_user.username = obj_in.username
-    invited_user.hashed_password = get_password_hash(obj_in.password)
-    invited_user.is_active = True
-    invited_user.email_confirmed = True
-
-    db.commit()
-    db.refresh(invited_user)
-    return invited_user
-
-
-def update_password(
-    db: Session, user_email: str, old_password: str, new_password: str
-) -> Optional[User]:
-
-    user = users.authenticate(db, email=user_email, password=old_password)
-    if not user:
-        return None
-
-    user.hashed_password = get_password_hash(new_password)
-    db.commit()
-    db.refresh(user)
-    return user
-
-
-def confirm_password_reset(
-    db: Session, renewal_token: str, new_password: str
-) -> Optional[User]:
-
-    user = db.query(User).filter(User.password_renewal_token == renewal_token).first()
-
-    if not user or datetime.now() > user.password_renewal_token_expires:
-        return None
-
-    user.hashed_password = get_password_hash(new_password)
-    user.password_renewal_token = None
-    user.password_renewal_token_expires = None
-
-    db.commit()
-    db.refresh(user)
-    return user
-
-
-def toggle_user_is_active(db: Session, user: User) -> User:
-    user.is_active = not user.is_active
-    db.commit()
-    db.refresh(user)
-    return user

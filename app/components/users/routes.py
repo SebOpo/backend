@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status, Respons
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
-from app.components import organizations
+from app.components import organizations, changelogs
 from app.components.users import schemas, models, crud
 from app.core.config import settings
 from app.utils.email_sender import send_email
@@ -81,8 +81,7 @@ async def generate_invite_link(
 @router.get("/verify", response_model=schemas.UserOut)
 async def verify_access_token(access_token: str, db: Session = Depends(get_db)) -> Any:
 
-    invited_user = crud.verify_registration_token(db, access_token)
-    print(invited_user.organization_model.name)
+    invited_user = crud.users.verify_registration_token(db, access_token)
     if not invited_user:
         raise HTTPException(
             status_code=400, detail="Token is either not valid or expired."
@@ -94,7 +93,7 @@ async def verify_access_token(access_token: str, db: Session = Depends(get_db)) 
 async def confirm_user_registration(
     access_token: str, user: schemas.UserCreate, db: Session = Depends(get_db)
 ) -> Any:
-    new_user = crud.confirm_registration(db, access_token=access_token, obj_in=user)
+    new_user = crud.users.confirm_registration(db, access_token=access_token, obj_in=user)
 
     if not new_user:
         raise HTTPException(
@@ -135,7 +134,7 @@ async def change_user_password(
     ),
     db: Session = Depends(get_db),
 ) -> Any:
-    updated_user = crud.update_password(
+    updated_user = crud.users.update_password(
         db,
         user_email=current_user.email,
         old_password=updated_info.old_password,
@@ -175,7 +174,7 @@ async def confirm_user_password_reset(
     renewal_data: schemas.UserPasswordRenewal, db: Session = Depends(get_db)
 ) -> Any:
 
-    user = crud.confirm_password_reset(
+    user = crud.users.confirm_password_reset(
         db, renewal_data.access_token, renewal_data.new_password
     )
     if not user:
@@ -222,7 +221,10 @@ async def toggle_user_activity(
     if current_user.role == "organizational_leader" and current_user.organization != user.organization:
         raise HTTPException(status_code=403, detail="Not allowed")
 
-    updated_user = crud.toggle_user_is_active(db, user)
+    updated_user = crud.users.toggle_user_is_active(db, user)
+    updated_changelogs = changelogs.crud.changelogs.bulk_toggle_changelog_visibility(
+        db, visible=updated_user.is_active, user_id=updated_user.id
+    )
 
     return updated_user
 

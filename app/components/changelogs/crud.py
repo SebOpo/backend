@@ -2,11 +2,10 @@ import datetime
 from typing import List
 
 from sqlalchemy import desc, func
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from app.components.changelogs import models, schemas
-from app.components import users
 from app.components import locations
 from app.core.base_crud import CRUDBase
 
@@ -55,10 +54,29 @@ class CRUDChangelog(
         db_changelog = self.get(db, model_id=changelog_id)
         if not db_changelog:
             raise HTTPException(status_code=400, detail="No such record.")
-        db_changelog.hidden = not db_changelog.hidden
+        db_changelog.visible = not db_changelog.visible
         db.commit()
         db.refresh(db_changelog)
         return db_changelog
+
+    def bulk_toggle_changelog_visibility(
+            self, db: Session, visible: bool, user_id: int = None, organization_id: int = None
+    ) -> List[models.ChangeLog]:
+
+        if not user_id and organization_id:
+            raise HTTPException(status_code=402, detail="Bad params")
+
+        if user_id:
+            changelog_list = db.query(self.model).\
+                filter(self.model.submitted_by == user_id).\
+                update({self.model.visible: visible}, synchronize_session=False)
+            return changelog_list
+
+        elif organization_id:
+            changelog_list = db.query(self.model)\
+                .filter(self.model.user.organization == organization_id)\
+                .update({self.model.visible: visible})
+            return changelog_list
 
 
 changelogs = CRUDChangelog(models.ChangeLog)

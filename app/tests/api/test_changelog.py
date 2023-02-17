@@ -81,7 +81,7 @@ def test_toggle_changelog_visibility(
 
     assert 200 <= r.status_code < 300
     hidden_changelog = r.json()
-    assert hidden_changelog["hidden"] is True
+    assert hidden_changelog["visible"] is False
 
     r = client.put(
         f"{settings.API_V1_STR}/changelogs/visibility/{location_changelogs[0]['id']}",
@@ -91,7 +91,7 @@ def test_toggle_changelog_visibility(
     assert 200 <= r.status_code < 300
     visible_changelog = r.json()
 
-    assert visible_changelog["hidden"] is False
+    assert visible_changelog["visible"] is True
 
 
 def test_get_changelogs_by_admin_id(
