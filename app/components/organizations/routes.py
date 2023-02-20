@@ -10,7 +10,7 @@ from app.components import users
 from app.core.config import settings
 from app.utils.email_sender import send_email
 
-router = APIRouter()
+router = APIRouter(prefix="/organizations", tags=["organizations"])
 
 
 @router.post("/create", response_model=schemas.OrganizationOut)

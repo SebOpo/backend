@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.dependencies import get_current_active_user, get_db
 from app.components.oauth import crud, schemas
 
-router = APIRouter()
+router = APIRouter(prefix="/oauth", tags=["oauth"])
 
 
 @router.post("/roles/create", response_model=schemas.OauthRoleOut)

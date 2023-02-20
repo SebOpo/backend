@@ -11,7 +11,7 @@ from app.components.auth.schemas import Token
 from app.core.config import settings
 from app.core.security import create_access_token
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login/token", response_model=Token)

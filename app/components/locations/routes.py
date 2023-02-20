@@ -26,7 +26,7 @@ from app.core.config import settings
 from app.utils import geocoding
 from app.utils.bulk_locations import upload_locations
 
-router = APIRouter()
+router = APIRouter(prefix="/locations", tags=["locations"])
 
 
 @router.post("/add", response_model=schemas.LocationOut)

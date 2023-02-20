@@ -8,7 +8,7 @@ from app.components.geocoding import schemas, enums
 from app.core.config import settings
 from app.utils import geocoding
 
-router = APIRouter()
+router = APIRouter(prefix="/geocode", tags=["geocoding"])
 logger = logging.getLogger(settings.PROJECT_NAME)
 
 

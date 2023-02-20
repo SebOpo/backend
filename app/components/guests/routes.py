@@ -15,7 +15,7 @@ from app.utils import geocoding
 from app.utils import sms_sender as sms
 from app.utils.time_utils import utc_convert
 
-router = APIRouter()
+router = APIRouter(prefix="/guest", tags=["guest-user"])
 limiter = Limiter(key_func=get_remote_address)
 
 

@@ -9,7 +9,7 @@ from app.components.users import schemas, models, crud
 from app.core.config import settings
 from app.utils.email_sender import send_email
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("/register", response_model=schemas.UserOut)
