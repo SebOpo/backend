@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status, Respons
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
-from app.components import organizations, changelogs
+from app.components import organizations, changelogs, activity_logs
 from app.components.users import schemas, models, crud
 from app.core.config import settings
 from app.utils.email_sender import send_email
@@ -218,12 +218,22 @@ async def toggle_user_activity(
     if not user:
         raise HTTPException(status_code=404, detail="Not found")
 
-    if current_user.role == "organizational_leader" and current_user.organization != user.organization:
+    if current_user.role != "platform_administrator" and current_user.organization != user.organization:
         raise HTTPException(status_code=403, detail="Not allowed")
 
     updated_user = crud.users.toggle_user_is_active(db, user)
+    # TODO return the number of updated changelogs.
     updated_changelogs = changelogs.crud.changelogs.bulk_toggle_changelog_visibility(
         db, visible=updated_user.is_active, user_id=updated_user.id
+    )
+    # TODO Find a smarter way to write descriptions
+    activity_log = activity_logs.crud.logs.create(
+        db, obj_in=activity_logs.schemas.ActivityLogBase(
+            user_id=current_user.id,
+            organization_id=user.organization,
+            action_type=4,
+            description=f'{user.email} was {"unblocked" if updated_user.is_active else "blocked"} by {current_user.email}'
+        )
     )
 
     return updated_user

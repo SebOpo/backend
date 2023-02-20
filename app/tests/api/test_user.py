@@ -229,6 +229,8 @@ def test_toggle_user_activity(
         aid_worker_token_headers: Dict[str, str]
 ) -> None:
 
+    # TODO verify that the changelog visibility is changed accordingly.
+
     aid_worker_id = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL).id
     r = client.put(
         f"{settings.API_V1_STR}/users/toggle-activity?user_id={aid_worker_id}",
