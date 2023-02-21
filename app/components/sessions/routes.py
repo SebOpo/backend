@@ -7,7 +7,7 @@ from app.api.dependencies import get_db, get_current_active_user
 from app.components import users
 from app.components.sessions import crud, schemas
 
-router = APIRouter()
+router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
 @router.get("/active", response_model=List[schemas.UserSession])

@@ -4,12 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status, Respons
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
-from app.components import organizations
+from app.components import organizations, changelogs, activity_logs
 from app.components.users import schemas, models, crud
 from app.core.config import settings
 from app.utils.email_sender import send_email
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("/register", response_model=schemas.UserOut)
@@ -20,7 +20,7 @@ async def register_user(
         get_current_active_user, scopes=["users:create"]
     ),
 ) -> Any:
-    existing_user = crud.get_by_email(db, email=user.email)
+    existing_user = crud.users.get_by_email(db, email=user.email)
     if existing_user:
         raise HTTPException(status_code=400, detail="User exists")
 
@@ -47,14 +47,15 @@ async def generate_invite_link(
     # if user.email == settings.TEST_USER_EMAIL:
     #     raise HTTPException(status_code=400, detail='This email is reserved.')
 
-    existing_user = crud.get_by_email(db, email=user.email)
+    existing_user = crud.users.get_by_email(db, email=user.email)
     if existing_user:
         raise HTTPException(status_code=400, detail="User exists")
 
     new_user = crud.create_invite(
         db,
         obj_in=user,
-        organization=organizations.crud.get_by_id(db, user.organization),
+        organization=organizations.crud.organizations.get(db, model_id=user.organization),
+        role_name="aid_worker"
     )
 
     if not new_user:
@@ -80,8 +81,7 @@ async def generate_invite_link(
 @router.get("/verify", response_model=schemas.UserOut)
 async def verify_access_token(access_token: str, db: Session = Depends(get_db)) -> Any:
 
-    invited_user = crud.verify_registration_token(db, access_token)
-    print(invited_user.organization_model.name)
+    invited_user = crud.users.verify_registration_token(db, access_token)
     if not invited_user:
         raise HTTPException(
             status_code=400, detail="Token is either not valid or expired."
@@ -93,7 +93,7 @@ async def verify_access_token(access_token: str, db: Session = Depends(get_db)) 
 async def confirm_user_registration(
     access_token: str, user: schemas.UserCreate, db: Session = Depends(get_db)
 ) -> Any:
-    new_user = crud.confirm_registration(db, access_token=access_token, obj_in=user)
+    new_user = crud.users.confirm_registration(db, access_token=access_token, obj_in=user)
 
     if not new_user:
         raise HTTPException(
@@ -119,7 +119,7 @@ async def patch_user_info(
     ),
     db: Session = Depends(get_db),
 ) -> Any:
-    updated_user = crud.update_info(
+    updated_user = crud.users.update_info(
         db, obj_in=updated_info, user_email=current_user.email
     )
 
@@ -134,7 +134,7 @@ async def change_user_password(
     ),
     db: Session = Depends(get_db),
 ) -> Any:
-    updated_user = crud.update_password(
+    updated_user = crud.users.update_password(
         db,
         user_email=current_user.email,
         old_password=updated_info.old_password,
@@ -151,7 +151,7 @@ async def change_user_password(
 @router.put("/password-reset")
 async def reset_user_password(user_email: str, db: Session = Depends(get_db)) -> Any:
 
-    user = crud.reset_password(db, user_email)
+    user = crud.users.reset_password(db, user_email)
     if not user:
         raise HTTPException(status_code=400, detail="No such user.")
 
@@ -174,7 +174,7 @@ async def confirm_user_password_reset(
     renewal_data: schemas.UserPasswordRenewal, db: Session = Depends(get_db)
 ) -> Any:
 
-    user = crud.confirm_password_reset(
+    user = crud.users.confirm_password_reset(
         db, renewal_data.access_token, renewal_data.new_password
     )
     if not user:
@@ -194,10 +194,47 @@ async def change_user_role(
     ),
     db: Session = Depends(get_db),
 ) -> Any:
-    updated_user = crud.change_role(db, user_id=user_id, role=role)
+    user = crud.users.get(db, model_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Not found")
 
+    updated_user = crud.users.change_role(db, user=user, role=role)
     if not updated_user:
         raise HTTPException(status_code=400, detail="Cannot update user")
+
+    return updated_user
+
+
+@router.put("/toggle-activity", response_model=schemas.UserOut)
+async def toggle_user_activity(
+        user_id: int,
+        current_user: models.User = Security(
+            get_current_active_user, scopes=["users:disable"]
+        ),
+        db: Session = Depends(get_db)
+) -> Any:
+
+    user = crud.users.get(db, model_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if current_user.role != "platform_administrator" and current_user.organization != user.organization:
+        raise HTTPException(status_code=403, detail="Not allowed")
+
+    updated_user = crud.users.toggle_user_is_active(db, user)
+    # TODO return the number of updated changelogs.
+    updated_changelogs = changelogs.crud.changelogs.bulk_toggle_changelog_visibility(
+        db, visible=updated_user.is_active, user_id=updated_user.id
+    )
+    # TODO Find a smarter way to write descriptions
+    activity_log = activity_logs.crud.logs.create(
+        db, obj_in=activity_logs.schemas.ActivityLogBase(
+            user_id=current_user.id,
+            organization_id=user.organization,
+            action_type=4,
+            description=f'{user.email} was {"unblocked" if updated_user.is_active else "blocked"} by {current_user.email}'
+        )
+    )
 
     return updated_user
 
@@ -210,7 +247,7 @@ async def delete_me(
     ),
     db: Session = Depends(get_db),
 ) -> Any:
-    deleted_user = crud.delete_user(db, current_user.id)
+    deleted_user = crud.users.delete(db, model_id=current_user.id)
 
     if deleted_user:
         raise HTTPException(status_code=400, detail="Cannot perform such action")

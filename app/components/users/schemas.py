@@ -36,6 +36,9 @@ class UserPasswordUpdate(BaseModel):
 class UserOrganizationDetails(BaseModel):
     id: int
     name: str
+    # TODO Remove the nones when everything is tested
+    disabled: Optional[bool] = None
+    activated: Optional[bool] = None
 
     class Config:
         orm_mode = True
@@ -59,13 +62,3 @@ class UserOut(UserRepresentation):
     role: str
     # TODO REMOVE
     registration_token: Optional[str] = None
-
-
-# TODO: Unused as of 31/01/2023
-class UserRole(BaseModel):
-
-    verbose_name: str
-    permissions: List[str]
-
-    class Config:
-        orm_mode = True

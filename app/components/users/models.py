@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from app.db.base_class import Base
 from app.db.utc_convertation import utcnow
@@ -32,8 +32,8 @@ class User(Base):
 
     email_confirmed = Column(Boolean(), default=False)
     is_active = Column(Boolean(), default=True)
+    disabled_for = Column(String, nullable=True)
 
-    # permissions = Column(JSONB, default={})
     role = Column(String, nullable=False)
 
     registration_token = Column(String)

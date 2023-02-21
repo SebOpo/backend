@@ -26,7 +26,7 @@ from app.core.config import settings
 from app.utils import geocoding
 from app.utils.bulk_locations import upload_locations
 
-router = APIRouter()
+router = APIRouter(prefix="/locations", tags=["locations"])
 
 
 @router.post("/add", response_model=schemas.LocationOut)
@@ -67,7 +67,8 @@ async def add_new_location(
         obj_in=changelogs.schemas.ChangeLogCreate(
             location_id=new_location.id,
             old_flags={},
-            new_flags=new_location.reports
+            new_flags=new_location.reports,
+            submitted_by=current_user.id
         )
     )
     # TODO ROLLBACK IF NONE ADDED
@@ -108,16 +109,6 @@ async def get_location_info(location_id: int, db: Session = Depends(get_db)) -> 
         raise HTTPException(status_code=400, detail="Not found")
 
     return location.to_json()
-
-
-@router.get("/changelogs", response_model=List[changelogs.schemas.ChangelogOut])
-async def get_location_changelogs(
-    location_id: int, db: Session = Depends(get_db)
-) -> Any:
-
-    logs = changelogs.crud.changelogs.get_changelogs(db, location_id)
-
-    return logs
 
 
 @router.post("/request-info", response_model=schemas.LocationOut)

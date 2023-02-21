@@ -7,7 +7,7 @@ from app.components.zones import schemas, crud
 from app.api.dependencies import get_db, get_current_active_user
 from app.utils import geocoding
 
-router = APIRouter()
+router = APIRouter(prefix="/zones", tags=["zones"])
 
 
 @router.post("/restrict")

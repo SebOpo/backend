@@ -61,7 +61,7 @@ def get_current_user(
         print(e)
         raise credentials_exception
 
-    user = users.crud.get(db, user_id=token_data.sub)
+    user = users.crud.users.get(db, model_id=token_data.sub)
     if not user:
         raise credentials_exception
 

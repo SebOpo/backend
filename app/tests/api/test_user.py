@@ -13,7 +13,7 @@ def test_invite_existing_user(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    dim_org = org_crud.get_by_name(test_db, "DIM")
+    dim_org = org_crud.organizations.get_by_name(test_db, "DIM")
     assert dim_org
 
     # using a superuser email here
@@ -31,7 +31,7 @@ def test_invite_existing_user(
 def test_invite_new_user(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-    dim_org = org_crud.get_by_name(test_db, "DIM")
+    dim_org = org_crud.organizations.get_by_name(test_db, "DIM")
     assert dim_org
 
     payload = {"email": settings.TEST_USER_EMAIL, "organization": dim_org.id}
@@ -44,7 +44,7 @@ def test_invite_new_user(
 
     assert 200 <= r.status_code < 300
     invited_user = r.json()
-    user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    user = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert user
     assert user.email == invited_user["email"]
     assert user.email_confirmed == False
@@ -53,7 +53,7 @@ def test_invite_new_user(
 
 
 def test_confirm_user_invite(client: TestClient, test_db: Session) -> None:
-    test_user_registration_token = users.crud.get_by_email(
+    test_user_registration_token = users.crud.users.get_by_email(
         test_db, email=settings.TEST_USER_EMAIL
     ).registration_token
     assert test_user_registration_token
@@ -72,7 +72,7 @@ def test_confirm_user_invite(client: TestClient, test_db: Session) -> None:
 
     assert 200 <= r.status_code < 300
     registered_user = r.json()
-    user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    user = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert user
     assert user.username == registered_user["username"]
     assert user.email_confirmed == True
@@ -92,7 +92,7 @@ def test_get_me(client: TestClient, aid_worker_token_headers: Dict[str, str]) ->
 def test_patch_user(
     client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
 ) -> None:
-    existing_user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    existing_user = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
 
     payload = {
         "username": random_lower_string(),
@@ -168,7 +168,7 @@ def test_user_change_role(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
 
-    aid_worker_user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    aid_worker_user = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert aid_worker_user
 
     r = client.put(
@@ -192,7 +192,7 @@ def test_user_password_reset(
 
     assert 200 <= r.status_code < 300
 
-    aid_worker = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    aid_worker = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert aid_worker.password_renewal_token
     assert aid_worker.password_renewal_token_expires
 
@@ -222,6 +222,43 @@ def test_user_password_reset(
     # assert not db_user.password_renewal_token_expires
 
 
+def test_toggle_user_activity(
+        client: TestClient,
+        test_db: Session,
+        superuser_token_headers: Dict[str, str],
+        aid_worker_token_headers: Dict[str, str]
+) -> None:
+
+    # TODO verify that the changelog visibility is changed accordingly.
+
+    aid_worker_id = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL).id
+    r = client.put(
+        f"{settings.API_V1_STR}/users/toggle-activity?user_id={aid_worker_id}",
+        headers=superuser_token_headers
+    )
+    assert 200 <= r.status_code < 300
+    disabled_user = r.json()
+    assert disabled_user["is_active"] == False
+
+    r = client.get(
+        f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers
+    )
+    assert r.status_code == 400
+
+    r = client.put(
+        f"{settings.API_V1_STR}/users/toggle-activity?user_id={aid_worker_id}",
+        headers=superuser_token_headers
+    )
+    assert 200 <= r.status_code < 300
+    disabled_user = r.json()
+    assert disabled_user["is_active"] == True
+
+    r = client.get(
+        f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers
+    )
+    assert 200 <= r.status_code < 300
+
+
 def test_user_delete_me(
     client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
 ) -> None:
@@ -231,5 +268,5 @@ def test_user_delete_me(
     )
     assert 200 <= r.status_code < 300
 
-    user = users.crud.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    user = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
     assert user is None

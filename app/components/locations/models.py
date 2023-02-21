@@ -1,9 +1,9 @@
 import geopy.distance
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
-from app.components import guests
+from app.components.guests.models import GuestUser
 from app.db.base_class import Base
 from app.db.utc_convertation import utcnow
 
@@ -19,7 +19,7 @@ class Location(Base):
 
     requested_by = Column(
         Integer,
-        ForeignKey(guests.models.GuestUser.id, ondelete="SET NULL"),
+        ForeignKey(GuestUser.id, ondelete="SET NULL"),
         nullable=True,
     )
 

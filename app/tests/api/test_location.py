@@ -232,35 +232,6 @@ def test_get_location_info(
     assert requested_location["status"] == 3
 
 
-def test_get_location_changelogs(
-    client: TestClient, test_db: Session, location: Location
-) -> None:
-
-    r = client.get(
-        f"{settings.API_V1_STR}/locations/changelogs?location_id={location.id}"
-    )
-    assert 200 <= r.status_code < 300
-    location_changelogs = r.json()
-
-    assert location_changelogs
-    for log in location_changelogs:
-        assert log["new_flags"]
-
-
-# def test_remove_location(
-#         client: TestClient,
-#         db: Session,
-#         superuser_token_headers: Dict[str, str],
-#         location_id: int
-# ) -> None:
-#
-#     r = client.delete(
-#         f'{settings.API_V1_STR}/locations/remove-location?location_id={location_id}',
-#         headers=superuser_token_headers
-#     )
-#     assert 200 <= r.status_code < 300
-
-
 def test_request_location_without_valid_address(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:

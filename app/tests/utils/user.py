@@ -35,4 +35,4 @@ def get_superuser_token_headers(client: TestClient) -> Dict[str, str]:
 
 
 def get_superuser_id(db: Session) -> int:
-    return users.crud.get_by_email(db, email=settings.FIRST_SUPERUSER).id
+    return users.crud.users.get_by_email(db, email=settings.FIRST_SUPERUSER).id
