@@ -161,6 +161,23 @@ def test_invite_organization_members(
     assert master_user.organization == master_organization_id
 
 
+def test_disable_organization(
+        client: TestClient,
+        test_db: Session,
+        superuser_token_headers: Dict[str, str],
+        superuser_id: int
+) -> None:
+    test_org = crud.organizations.get_by_name(test_db, name="TestOrg")
+
+    r = client.put(
+        f"{settings.API_V1_STR}/organizations/toggle-activity/{test_org.id}",
+        headers=superuser_token_headers
+    )
+    assert 200 <= r.status_code < 300
+    disabled_org = r.json()
+    assert disabled_org["disabled"]
+
+
 def test_delete_organization(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
