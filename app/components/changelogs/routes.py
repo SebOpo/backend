@@ -45,8 +45,15 @@ async def toggle_visibility(
         )
 ) -> Any:
 
-    changelog = changelogs.crud.changelogs.toggle_changelog_visibility(
-        db, changelog_id=changelog_id
+    changelog = changelogs.crud.changelogs.get(db, model_id=changelog_id)
+    if not changelog:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if current_user.role != "platform_administrator" and changelog.user.organization != current_user.organization:
+        raise HTTPException(status_code=403, detail="Not allowed")
+
+    updated_changelog = changelogs.crud.changelogs.toggle_changelog_visibility(
+        db, changelog=changelog
     )
 
-    return changelog
+    return updated_changelog

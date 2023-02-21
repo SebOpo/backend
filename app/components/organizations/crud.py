@@ -96,6 +96,14 @@ class CRUDOrganization(
 
         return self.get(db, model_id=organization_id)
 
+    def toggle_organization_is_active(
+            self, db: Session, organization: models.Organization
+    ) -> models.Organization:
+        organization.disabled = not organization.disabled
+        db.commit()
+        db.refresh(organization)
+        return organization
+
     def delete_organization(
             self,
             db: Session,

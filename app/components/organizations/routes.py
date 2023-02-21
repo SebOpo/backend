@@ -1,12 +1,11 @@
 from typing import Any, List
 
-import fastapi
 from fastapi import APIRouter, Depends, HTTPException, Security, status, Response
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
 from app.components.organizations import crud, schemas
-from app.components import users
+from app.components import users, changelogs, activity_logs
 from app.core.config import settings
 from app.utils.email_sender import send_email
 
@@ -182,6 +181,32 @@ async def remove_organization_member(
             status_code=400, detail="This user does not belong to such organization"
         )
 
+    return updated_organization
+
+
+@router.put('/toggle-activity/{organization_id}', response_model=schemas.OrganizationOut)
+async def toggle_organization_activity(
+        organization_id: int,
+        db: Session = Depends(get_db),
+        current_active_user=Security(
+            get_current_active_user, scopes=["organizations:delete"]
+        )
+) -> Any:
+    organization = crud.organizations.get(db, model_id=organization_id)
+    if not organization:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    updated_organization = crud.organizations.toggle_organization_is_active(
+        db, organization
+    )
+    for user in updated_organization.participants:
+        updated_user = users.crud.users.toggle_user_is_active(db, user)
+        # TODO return the number of updated changelogs.
+        updated_changelogs = changelogs.crud.changelogs.bulk_toggle_changelog_visibility(
+            db, visible=updated_user.is_active, user_id=updated_user.id
+        )
+
+    # TODO add activity log record
     return updated_organization
 
 

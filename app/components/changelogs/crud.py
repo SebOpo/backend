@@ -50,14 +50,11 @@ class CRUDChangelog(
             filters.append(self.model.created_at <= date_max)
         return db.query(self.model).filter(*filters).all()
 
-    def toggle_changelog_visibility(self, db: Session, changelog_id: int) -> models.ChangeLog:
-        db_changelog = self.get(db, model_id=changelog_id)
-        if not db_changelog:
-            raise HTTPException(status_code=400, detail="No such record.")
-        db_changelog.visible = not db_changelog.visible
+    def toggle_changelog_visibility(self, db: Session, changelog: models.ChangeLog) -> models.ChangeLog:
+        changelog.visible = not changelog.visible
         db.commit()
-        db.refresh(db_changelog)
-        return db_changelog
+        db.refresh(changelog)
+        return changelog
 
     def bulk_toggle_changelog_visibility(
             self, db: Session, visible: bool, user_id: int = None, organization_id: int = None
