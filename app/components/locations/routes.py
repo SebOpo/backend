@@ -154,17 +154,6 @@ async def request_location_review(
 
     return new_location.to_json()
 
-    # location_to_review = crud.create_location_review_request(
-    #     db,
-    #     address=address,
-    #     lat=location.lat,
-    #     lng=location.lng
-    # )
-    # if not location_to_review:
-    #     raise HTTPException(status_code=500, detail="Cannot connect to the database, please try again")
-    #
-    # return location_to_review.to_json()
-
 
 @router.get("/pending-count")
 async def get_pending_locations_count(
@@ -177,17 +166,19 @@ async def get_pending_locations_count(
 
 @router.get("/location-requests", response_model=List[schemas.LocationOut])
 async def get_requested_locations(
-    page: int = 1,
-    limit: int = 20,
-    user_lat: float = None,
-    user_lng: float = None,
+    search_params: schemas.PendingLocationSearch = Depends(),
     db: Session = Depends(get_db),
     current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
 
-    location_list = locations.get_locations_awaiting_reports(db, limit, page - 1)
+    location_list = locations.get_locations_awaiting_reports(
+        db, **search_params.dict(exclude={"user_lat", "user_lng"})
+    )
 
-    return [location.to_json(user_lat, user_lng) for location in location_list]
+    return [
+        location.to_json(search_params.user_lat, search_params.user_lng)
+        for location in location_list
+    ]
 
 
 @router.put("/assign-location")
@@ -308,10 +299,10 @@ async def bulk_add_locations(
         content = await file.read()
         await file_object.write(content)
 
-    locations = await upload_locations(filepath, "excel")
+    location_list = await upload_locations(filepath, "excel")
     os.remove(filepath)
 
-    return locations
+    return location_list
 
 
 # TODO REMOVE ENDPOINT ( TESTING ONLY )

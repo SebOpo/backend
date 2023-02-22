@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 
 from pydantic import BaseModel, validator, root_validator
 from typing_extensions import TypedDict
@@ -65,6 +65,7 @@ class LocationOut(BaseModel):
     street_number: Optional[str] = None
     index: Optional[str] = None
     city: Optional[str] = None
+    region: Optional[str] = None
     status: int
     country: Optional[str] = None
     position: Dict
@@ -79,4 +80,21 @@ class LocationOut(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PendingLocationSearch(BaseModel):
+    date: Optional[Any] = None
+    address_query: Optional[str] = None
+    # region is going to be an int from the regions table?
+    region: Optional[str] = None
+    limit: int = 20
+    page: int = 1
+    user_lat: Optional[float] = None
+    user_lng: Optional[float] = None
+
+    @validator("date", pre=True)
+    def parse_date(cls, v):
+        if not v or isinstance(v, datetime):
+            return
+        return datetime.fromtimestamp(int(v))
 

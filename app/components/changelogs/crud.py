@@ -40,7 +40,10 @@ class CRUDChangelog(
             filters.append(
                 self.model.location.has(
                     func.concat(
-                        locations.models.Location.address, locations.models.Location.street_number
+                        locations.models.Location.address,
+                        locations.models.Location.street_number,
+                        locations.models.Location.index,
+                        locations.models.Location.city
                     ).contains(query)
                 )
             )

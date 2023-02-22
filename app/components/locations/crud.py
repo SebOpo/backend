@@ -4,7 +4,7 @@ from typing import List, Any, Optional, Dict
 
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.components import users, changelogs
@@ -63,16 +63,42 @@ class CRUDLocation(
         )
 
     def get_locations_awaiting_reports(
-        self, db: Session, limit: int = 20, skip: int = 0
+            self,
+            db: Session,
+            limit: int = 20,
+            page: int = 1,
+            date: datetime = None,
+            address_query: str = None,
+            region: str = None
     ) -> List[Location]:
+        filters = []
+        if date:
+            filters.append(self.model.created_at == date)
+        if address_query:
+            filters.append(
+                self.model.has(
+                    func.concat(
+                        self.model.address, self.model.street_number, self.model.index, self.model.city
+                    ).contains(address_query)
+                )
+            )
         return (
             db.query(self.model)
             .filter(self.model.status == 1, self.model.reported_by == None)
+            .filter(*filters)
             .order_by(desc(self.model.created_at))
             .limit(limit)
-            .offset(skip * limit)
+            .offset((page - 1) * limit)
             .all()
         )
+        # return (
+        #     db.query(self.model)
+        #     .filter(self.model.status == 1, self.model.reported_by == None)
+        #     .order_by(desc(self.model.created_at))
+        #     .limit(limit)
+        #     .offset((page - 1) * limit)
+        #     .all()
+        # )
 
     def assign_report(
         self, db: Session, user_id: int, location_id: int
