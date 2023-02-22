@@ -32,6 +32,7 @@ class Location(Base):
     city = Column(String)
     country = Column(String)
     index = Column(Integer)
+    region = Column(String)
     lat = Column(Float)
     lng = Column(Float)
     reports = Column(JSONB)  # Should we create a separate table for this??

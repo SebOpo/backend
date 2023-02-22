@@ -8,9 +8,6 @@ from app.components import reports, geocoding
 from app.utils.validators import convert_to_utc
 
 
-# TODO LocationOut class with typed dict position (check to_json location method)
-
-
 class LocationBase(BaseModel):
     lat: float
     lng: float
@@ -31,6 +28,7 @@ class LocationCreate(LocationBase):
     city: str
     country: str
     index: int
+    region: str
     reports: Reports
 
 
@@ -49,6 +47,7 @@ class LocationUpdate(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     index: Optional[int] = None
+    region: Optional[str] = None
     reports: Reports
 
 
