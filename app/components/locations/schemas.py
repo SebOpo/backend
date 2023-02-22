@@ -28,7 +28,7 @@ class LocationCreate(LocationBase):
     city: str
     country: str
     index: int
-    region: str
+    region: Optional[str] = None
     reports: Reports
 
 
