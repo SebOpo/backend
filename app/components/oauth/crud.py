@@ -54,7 +54,9 @@ class CRUDRoles(
         if existing_role:
             return existing_role
 
-        db_object = models.OauthRole(verbose_name=role.verbose_name)
+        db_object = models.OauthRole(
+            verbose_name=role.verbose_name, authority=role.authority
+        )
         db_object.scopes.extend(scope_list)
 
         db.add(db_object)
@@ -75,10 +77,13 @@ class CRUDRoles(
         *,
         role: models.OauthRole,
         scope_list: List[schemas.OauthScope],
-        name: str = None,
+        obj_in: schemas.OauthRoleCreate,
     ) -> Optional[models.OauthRole]:
 
-        role.verbose_name = name if name else role.verbose_name
+        data_to_update = obj_in.dict(exclude_unset=True)
+        for field in data_to_update:
+            setattr(role, field, data_to_update[field])
+
         role.scopes = scope_list
         db.commit()
         db.refresh(role)

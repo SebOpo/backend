@@ -41,6 +41,7 @@ association_table = Table(
 class OauthRole(Base):
     __tablename__ = "OauthRole"
     id = Column(Integer, primary_key=True, index=True)
+    authority = Column(Integer, nullable=False)
     verbose_name = Column(String, nullable=False, unique=True)
     scopes = relationship(
         "OauthScope", secondary=association_table, back_populates="roles"

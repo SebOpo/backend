@@ -54,7 +54,7 @@ async def patch_oauth_role(
         db=db,
         role=db_role,
         scope_list=scope_list,
-        name=oauth_role.verbose_name,
+        obj_in=schemas.OauthRoleCreate(**oauth_role),
     )
 
     return patched_role

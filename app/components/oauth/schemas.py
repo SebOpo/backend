@@ -17,10 +17,16 @@ class OauthScopeOut(OauthScope):
 
 class OauthRole(BaseModel):
     verbose_name: str
+    authority: int
 
 
 class OauthRoleCreate(OauthRole):
     scope_ids: List[int]
+
+
+class OauthRoleUpdate(OauthRole):
+    verbose_name: Optional[str] = None
+    authority: Optional[str] = None
 
 
 class OauthRoleOut(OauthRole):

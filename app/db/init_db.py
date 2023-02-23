@@ -40,7 +40,7 @@ def init_db(db: Session) -> users.models.User:
 
     admin_role = oauth.crud.roles.get_or_create_role(
         db=db,
-        role=oauth.schemas.OauthRole(verbose_name="platform_administrator"),
+        role=oauth.schemas.OauthRole(verbose_name="platform_administrator", authority=10),
         scope_list=admin_scopes,
     )
 
@@ -57,6 +57,7 @@ def init_db(db: Session) -> users.models.User:
         db=db,
         role=oauth.schemas.OauthRole(
             verbose_name="organizational_leader",
+            authority=2
         ),
         scope_list=org_leader_scopes
     )
@@ -75,6 +76,7 @@ def init_db(db: Session) -> users.models.User:
         db=db,
         role=oauth.schemas.OauthRole(
             verbose_name="aid_worker",
+            authority=1
         ),
         scope_list=aid_worker_scopes,
     )
