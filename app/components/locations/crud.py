@@ -91,14 +91,6 @@ class CRUDLocation(
             .offset((page - 1) * limit)
             .all()
         )
-        # return (
-        #     db.query(self.model)
-        #     .filter(self.model.status == 1, self.model.reported_by == None)
-        #     .order_by(desc(self.model.created_at))
-        #     .limit(limit)
-        #     .offset((page - 1) * limit)
-        #     .all()
-        # )
 
     def assign_report(
         self, db: Session, user_id: int, location_id: int

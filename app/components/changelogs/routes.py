@@ -34,7 +34,6 @@ async def search_changelogs(
     changelog_list = changelogs.crud.changelogs.search_changelogs(
         db, **search_params.dict()
     )
-    print(len(changelog_list))
     return changelog_list
 
 

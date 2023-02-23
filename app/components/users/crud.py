@@ -122,17 +122,6 @@ class CRUDUser(
         db.refresh(user)
         return user
 
-    def change_role(self, db: Session, user: User, role: str) -> Optional[User]:
-
-        role = oauth.crud.roles.get_role_by_name(db, role)
-        if not role:
-            return None
-
-        user.role = role.verbose_name
-
-        db.commit()
-        db.refresh(user)
-        return user
 
     def toggle_user_is_active(self, db: Session, user: User) -> User:
         user.is_active = not user.is_active

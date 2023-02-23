@@ -185,26 +185,6 @@ async def confirm_user_password_reset(
     return Response(status_code=status.HTTP_200_OK)
 
 
-@router.put("/change-role", response_model=schemas.UserOut)
-async def change_user_role(
-    user_id: int,
-    role: str,
-    current_user: models.User = Security(
-        get_current_active_user, scopes=["users:roles"]
-    ),
-    db: Session = Depends(get_db),
-) -> Any:
-    user = crud.users.get(db, model_id=user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="Not found")
-
-    updated_user = crud.users.change_role(db, user=user, role=role)
-    if not updated_user:
-        raise HTTPException(status_code=400, detail="Cannot update user")
-
-    return updated_user
-
-
 @router.put("/toggle-activity", response_model=schemas.UserOut)
 async def toggle_user_activity(
         user_id: int,
