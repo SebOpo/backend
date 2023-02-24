@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status, Respons
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
-from app.components import organizations, changelogs, activity_logs
+from app.components import organizations, changelogs, activity_logs, oauth
 from app.components.users import schemas, models, crud
 from app.core.config import settings
 from app.utils.email_sender import send_email
@@ -217,6 +217,33 @@ async def toggle_user_activity(
     )
 
     return updated_user
+
+
+@router.put('/change-role', response_model=schemas.UserOut)
+async def change_user_role(
+        user_id: int,
+        role_id: int,
+        db: Session = Depends(get_db),
+        current_user=Security(
+            get_current_active_user, scopes=["users:roles"]
+        )
+) -> Any:
+    user = crud.users.get(db, model_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    new_role = oauth.crud.roles.get(db, model_id=role_id)
+    user_role = oauth.crud.roles.get_role_by_name(db, role_name=current_user.role)
+    current_user_role = oauth.crud.roles.get_role_by_name(db, role_name=current_user.role)
+    if not new_role:
+        raise HTTPException(status_code=400, detail="Bad params")
+
+    if new_role.authority > current_user_role.authority or user_role.authority > current_user_role.authority:
+        raise HTTPException(status_code=403, detail="Not allowed")
+
+    changed_user = crud.users.change_user_role(db, user=user, new_role=new_role)
+    # What happens to the logged in users? How do we force him to relogin?
+    return changed_user
 
 
 # TODO do we need this? Is the edit permission right for such operation (reserved route for tests)

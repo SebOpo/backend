@@ -3,7 +3,7 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.components import users
+from app.components import users, oauth
 from app.components.organizations import crud as org_crud
 from app.core.config import settings
 from app.tests.utils.utils import random_lower_string
@@ -239,6 +239,36 @@ def test_toggle_user_activity(
         f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers
     )
     assert 200 <= r.status_code < 300
+
+
+def test_change_user_role(
+        client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
+) -> None:
+
+    aid_worker_user = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    org_leader_role = oauth.crud.roles.get_role_by_name(test_db, role_name="organizational_leader")
+
+    r = client.put(
+        f"{settings.API_V1_STR}/users/change-role?user_id={aid_worker_user.id}&role_id={org_leader_role.id}",
+        headers=superuser_token_headers
+    )
+    assert 200 <= r.status_code < 300
+    changed_user = r.json()
+    assert changed_user["role"] == "organizational_leader"
+
+
+def test_change_user_role_not_allowed(
+        client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
+) -> None:
+
+    superuser = users.crud.users.get_by_email(test_db, email=settings.FIRST_SUPERUSER)
+    aid_worker_role = oauth.crud.roles.get_role_by_name(test_db, role_name="aid_worker")
+
+    r = client.put(
+        f"{settings.API_V1_STR}/users/change-role?user_id={superuser.id}&role_id={aid_worker_role.id}",
+        headers=aid_worker_token_headers
+    )
+    assert r.status_code == 403
 
 
 def test_user_delete_me(

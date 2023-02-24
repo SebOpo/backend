@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
 from app.components import oauth
 from app.components.users.models import User
@@ -122,6 +123,11 @@ class CRUDUser(
         db.refresh(user)
         return user
 
+    def change_user_role(self, db: Session, user: User, new_role: oauth.models.OauthRole):
+        user.role = new_role.verbose_name
+        db.commit()
+        db.refresh(user)
+        return user
 
     def toggle_user_is_active(self, db: Session, user: User) -> User:
         user.is_active = not user.is_active

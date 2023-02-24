@@ -1,19 +1,8 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 from app.db.utc_convertation import utcnow
-
-role_permissions = {
-    "aid_worker": ["locations:view", "locations:edit", "users:me", "users:edit"],
-    "platform_administrator": [
-        "locations:view",
-        "locations:delete",
-        "users:create",
-        "users:me",
-        "users:edit",
-    ],
-}
 
 
 class User(Base):

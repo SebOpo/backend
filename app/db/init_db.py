@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.components import oauth, users, organizations
 from app.core.config import settings
 
+# TODO REWORK THIS SCRIPT
+
 AID_WORKER_SCOPES = [
     "users:me",
     "users:edit",
