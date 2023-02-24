@@ -233,7 +233,7 @@ async def change_user_role(
         raise HTTPException(status_code=404, detail="Not found")
 
     new_role = oauth.crud.roles.get(db, model_id=role_id)
-    user_role = oauth.crud.roles.get_role_by_name(db, role_name=current_user.role)
+    user_role = oauth.crud.roles.get_role_by_name(db, role_name=user.role)
     current_user_role = oauth.crud.roles.get_role_by_name(db, role_name=current_user.role)
     if not new_role:
         raise HTTPException(status_code=400, detail="Bad params")

@@ -18,6 +18,7 @@ ORGANIZATIONAL_LEADER_SCOPES = [
     "users:me",
     "users:edit",
     "users:disable",
+    "users:roles",
     "locations:view",
     "locations:edit",
     "locations:create",

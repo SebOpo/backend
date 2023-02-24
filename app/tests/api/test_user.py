@@ -258,15 +258,28 @@ def test_change_user_role(
 
 
 def test_change_user_role_not_allowed(
-        client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
+        client: TestClient, test_db: Session
 ) -> None:
+
+    # We need to reacquire aid worker headers because the ones in fixtures are preloaded for an aid worker role.
+    # But since we changed it in the previous test, we need to re login to acquire new permissions.
+    # TODO think of this.
+
+    data = {
+        "username": settings.TEST_USER_EMAIL,
+        "password": settings.TEST_USER_PASSWORD
+    }
+    r = client.post(f"{settings.API_V1_STR}/auth/login/token", data=data)
+    response = r.json()
+    auth_token = response["access_token"]
+    headers = {"Authorization": f"Bearer {auth_token}"}
 
     superuser = users.crud.users.get_by_email(test_db, email=settings.FIRST_SUPERUSER)
     aid_worker_role = oauth.crud.roles.get_role_by_name(test_db, role_name="aid_worker")
 
     r = client.put(
         f"{settings.API_V1_STR}/users/change-role?user_id={superuser.id}&role_id={aid_worker_role.id}",
-        headers=aid_worker_token_headers
+        headers=headers
     )
     assert r.status_code == 403
 
