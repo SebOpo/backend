@@ -1,7 +1,13 @@
+import os
+
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 
 from app.components import oauth, users, organizations
 from app.core.config import settings
+
+
+load_dotenv()
 
 # TODO REWORK THIS SCRIPT
 
@@ -110,5 +116,27 @@ def init_db(db: Session) -> users.models.User:
             organization=organization.id,
         )
         user = users.crud.create(db, obj_in=new_user, role="platform_administrator")
+
+    if settings.ENV_TYPE == "test":
+        aid_worker_user = users.crud.users.get_by_email(db, email=os.getenv("TEST_AID_WORKER_EMAIL"))
+        if not aid_worker_user:
+            new_aid_worker = users.schemas.UserCreate(
+                email=os.getenv("TEST_AID_WORKER_EMAIL"),
+                password=os.getenv("TEST_AID_WORKER_PASSWORD"),
+                organization=organization.id
+            )
+            aid_worker = users.crud.create(db, obj_in=new_aid_worker, role="aid_worker")
+        organizational_leader_user = users.crud.users.get_by_email(
+            db, email=os.getenv("TEST_ORGANIZATIONAL_LEADER_EMAIL")
+        )
+        if not organizational_leader_user:
+            new_organizational_leader = users.schemas.UserCreate(
+                email=os.getenv("TEST_ORGANIZATIONAL_LEADER_EMAIL"),
+                password=os.getenv("TEST_ORGANIZATIONAL_LEADER_PASSWORD"),
+                organization=organization.id
+            )
+            organizational_leader = users.crud.create(
+                db, obj_in=new_organizational_leader, role="organizational_leader"
+            )
 
     return user
