@@ -111,6 +111,8 @@ def init_db(db: Session) -> users.models.User:
     user = users.crud.users.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
         new_user = users.schemas.UserCreate(
+            username="Superuser",
+            full_name="Admin Superuser",
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             organization=organization.id,
@@ -121,6 +123,8 @@ def init_db(db: Session) -> users.models.User:
         aid_worker_user = users.crud.users.get_by_email(db, email=os.getenv("TEST_AID_WORKER_EMAIL"))
         if not aid_worker_user:
             new_aid_worker = users.schemas.UserCreate(
+                username="Test aid worker",
+                full_name="Test aid worker",
                 email=os.getenv("TEST_AID_WORKER_EMAIL"),
                 password=os.getenv("TEST_AID_WORKER_PASSWORD"),
                 organization=organization.id
@@ -131,6 +135,8 @@ def init_db(db: Session) -> users.models.User:
         )
         if not organizational_leader_user:
             new_organizational_leader = users.schemas.UserCreate(
+                username="Test org leader",
+                full_name="Test org leader",
                 email=os.getenv("TEST_ORGANIZATIONAL_LEADER_EMAIL"),
                 password=os.getenv("TEST_ORGANIZATIONAL_LEADER_PASSWORD"),
                 organization=organization.id
