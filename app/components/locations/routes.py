@@ -17,8 +17,8 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
 from app.components import users, changelogs
-from app.components.geospatial.crud import geospatial_index
 from app.components.geospatial import schemas as geo_schemas
+from app.components.geospatial.crud import geospatial_index
 from app.components.locations import crud, schemas
 from app.components.locations.crud import locations
 from app.components.zones.crud import zones
@@ -68,8 +68,8 @@ async def add_new_location(
             location_id=new_location.id,
             old_flags={},
             new_flags=new_location.reports,
-            submitted_by=current_user.id
-        )
+            submitted_by=current_user.id,
+        ),
     )
     # TODO ROLLBACK IF NONE ADDED
     return new_location.to_json()
@@ -77,7 +77,6 @@ async def add_new_location(
 
 @router.get("/search")
 async def get_location(lat: float, lng: float, db: Session = Depends(get_db)) -> Any:
-
     location = locations.get_location_by_coordinates(db, lat, lng)
 
     if not location:
@@ -90,7 +89,6 @@ async def get_location(lat: float, lng: float, db: Session = Depends(get_db)) ->
 async def get_locations_by_coordinates(
     coordinates: schemas.LocationBase, db: Session = Depends(get_db)
 ) -> Any:
-
     markers = geospatial_index.search_indexes_in_range(
         db,
         coordinates.lat,
@@ -102,7 +100,6 @@ async def get_locations_by_coordinates(
 
 @router.get("/location-info", response_model=schemas.LocationOut)
 async def get_location_info(location_id: int, db: Session = Depends(get_db)) -> Any:
-
     location = locations.get(db=db, model_id=location_id)
 
     if not location:
@@ -115,7 +112,6 @@ async def get_location_info(location_id: int, db: Session = Depends(get_db)) -> 
 async def request_location_review(
     location: schemas.LocationBase, db: Session = Depends(get_db)
 ) -> Any:
-
     existing_location = locations.get_location_by_coordinates(
         db, location.lat, location.lng
     )
@@ -160,7 +156,6 @@ async def get_pending_locations_count(
     db: Session = Depends(get_db),
     current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
-
     return {"count": locations.get_locations_awaiting_reports_count(db)}
 
 
@@ -170,7 +165,6 @@ async def get_requested_locations(
     db: Session = Depends(get_db),
     current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
-
     location_list = locations.get_locations_awaiting_reports(
         db, **search_params.dict(exclude={"user_lat", "user_lng"})
     )
@@ -189,7 +183,6 @@ async def assign_location_report(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
-
     location = locations.assign_report(
         db, user_id=current_user.id, location_id=location_id
     )
@@ -226,7 +219,6 @@ async def get_user_assigned_locations(
         get_current_active_user, scopes=["locations:view"]
     ),
 ) -> Any:
-
     location_list = locations.get_user_assigned_locations(db, user_id=current_user.id)
     return [location.to_json() for location in location_list]
 
@@ -239,8 +231,9 @@ async def submit_location_report(
         get_current_active_user, scopes=["locations:edit"]
     ),
 ) -> Any:
-
-    location = crud.locations.submit_location_reports(db, obj_in=reports, user=current_user)
+    location = crud.locations.submit_location_reports(
+        db, obj_in=reports, user=current_user
+    )
 
     if not location:
         raise HTTPException(
@@ -256,7 +249,6 @@ async def remove_location(
     db: Session = Depends(get_db),
     current_user=Security(get_current_active_user, scopes=["locations:delete"]),
 ) -> Any:
-
     # TODO place to archive?
     location = locations.delete(db=db, model_id=location_id)
 
@@ -268,7 +260,6 @@ async def remove_location(
 
 @router.get("/recent-reports", response_model=List[schemas.LocationOut])
 async def get_activity_feed(records: int = 10, db: Session = Depends(get_db)) -> Any:
-
     location_list = crud.locations.get_activity_feed(db, records)
 
     return [location.to_json() for location in location_list]
@@ -280,7 +271,6 @@ async def bulk_add_locations(
     # current_user: models.User = Security(get_current_active_user,
     #                                      scopes=['locations:delete'])
 ) -> Any:
-
     if (
         file.content_type
         != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -311,7 +301,6 @@ async def delete_all_locations(
     db: Session = Depends(get_db),
     current_user=Security(get_current_active_user, scopes=["locations:delete"]),
 ) -> Any:
-
     if settings.ENV_TYPE != "test":
         raise HTTPException(status_code=403, detail="This endpoint is restricted.")
 

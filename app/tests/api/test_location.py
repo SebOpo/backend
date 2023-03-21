@@ -3,10 +3,10 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.components.geospatial import crud as geo_crud
 from app.components.locations.crud import locations
 from app.components.locations.models import Location
+from app.core.config import settings
 from app.utils.populate_db import populate_reports
 
 
@@ -15,7 +15,6 @@ def test_add_new_location(
     test_db: Session,
     superuser_token_headers: Dict[str, str],
 ) -> None:
-
     payload = {
         "lat": "49.2363517942551",
         "lng": "28.46728473547535",
@@ -37,14 +36,15 @@ def test_add_new_location(
     location = locations.get(db=test_db, model_id=added_location["id"])
     assert location.status == 3
     assert added_location["address"] == location.address
-    geo_record = geo_crud.geospatial_index.search_index_by_location_id(test_db, location_id=location.id)
+    geo_record = geo_crud.geospatial_index.search_index_by_location_id(
+        test_db, location_id=location.id
+    )
     assert geo_record.geohash
 
 
 def test_request_location_info(
     client: TestClient, test_db: Session, sample_location_coordinates: Dict[str, str]
 ) -> None:
-
     r = client.post(
         f"{settings.API_V1_STR}/locations/request-info",
         json=sample_location_coordinates,
@@ -65,7 +65,6 @@ def test_request_location_info(
 
 
 def test_get_location_by_coords(client: TestClient, test_db: Session) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/locations/search?lat=49.24003079548452&lng=28.480316724096923"
     )
@@ -80,7 +79,6 @@ def test_get_location_by_coords(client: TestClient, test_db: Session) -> None:
 def test_pending_location_count(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/locations/pending-count",
         headers=superuser_token_headers,
@@ -97,7 +95,6 @@ def test_pending_location_count(
 def test_get_pending_locations(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     # TODO testing with the user geolocation?
     r = client.get(
         f"{settings.API_V1_STR}/locations/location-requests",
@@ -117,7 +114,6 @@ def test_assign_location(
     superuser_id: int,
     location: Location,
 ) -> None:
-
     r = client.put(
         f"{settings.API_V1_STR}/locations/assign-location?location_id={location.id}",
         headers=superuser_token_headers,
@@ -139,7 +135,6 @@ def test_get_assigned_locations(
     superuser_id: int,
     location: Location,
 ) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/locations/assigned-locations",
         headers=superuser_token_headers,
@@ -161,7 +156,6 @@ def test_remove_assigned_location(
     superuser_token_headers: Dict[str, str],
     location: Location,
 ) -> None:
-
     r = client.put(
         f"{settings.API_V1_STR}/locations/assign-location?location_id={location.id}",
         headers=superuser_token_headers,
@@ -185,7 +179,6 @@ def test_submit_location_report(
     location: Location,
     superuser_id: int,
 ) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/locations/location-requests",
         headers=superuser_token_headers,
@@ -194,10 +187,7 @@ def test_submit_location_report(
     pending_locations = r.json()
     assert pending_locations
 
-    random_reports = {
-        "reports": populate_reports(),
-        "location_id": location.id
-    }
+    random_reports = {"reports": populate_reports(), "location_id": location.id}
 
     r = client.put(
         f"{settings.API_V1_STR}/locations/submit-report",
@@ -220,7 +210,6 @@ def test_submit_location_report(
 def test_get_location_info(
     client: TestClient, test_db: Session, location: Location
 ) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/locations/location-info?location_id={location.id}"
     )
@@ -235,7 +224,6 @@ def test_get_location_info(
 def test_request_location_without_valid_address(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     # create a sample location somewhere near Lviv
     payload = {"lat": 50.0111909, "lng": 24.0506995}
     r = client.post(f"{settings.API_V1_STR}/locations/request-info", json=payload)
@@ -250,7 +238,7 @@ def test_request_location_without_valid_address(
         "reports": populate_reports(),
         "location_id": requested_location["id"],
         "street_number": "1",
-        "address": "Test street"
+        "address": "Test street",
     }
 
     r = client.put(
@@ -266,11 +254,8 @@ def test_request_location_without_valid_address(
     assert updated_location["status"] == 3
 
 
-def test_get_recent_location_reports(
-        client: TestClient, test_db: Session
-) -> None:
-
-    r = client.get(f'{settings.API_V1_STR}/locations/recent-reports')
+def test_get_recent_location_reports(client: TestClient, test_db: Session) -> None:
+    r = client.get(f"{settings.API_V1_STR}/locations/recent-reports")
     assert 200 <= r.status_code < 300
 
     recent_reports = r.json()

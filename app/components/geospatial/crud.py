@@ -14,7 +14,6 @@ class CRUDGeospatial(
     def search_indexes_in_range(
         self, db: Session, lat: float, lng: float
     ) -> List[GeospatialIndex]:
-
         # You can check the link below to understand the precision levels, for instance 2 is ≤ 1,250km X 625km
         # https://docs.quadrant.io/quadrant-geohash-algorithm
 

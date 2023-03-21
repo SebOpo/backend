@@ -4,9 +4,9 @@ from typing import List, Dict
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from app.core.config import settings
 # from app.components.locations.crud import bulk_insert_locations
 from app.components.locations import crud
+from app.core.config import settings
 from app.db.session import SessionLocal
 from app.utils.geocoding import geocode_address
 
@@ -49,7 +49,6 @@ async def serialize_excel(spreadsheet: Worksheet) -> Dict:
 
 
 async def geocode_locations(locations: List[Dict]) -> Dict:
-
     geocoded_locations = []
     unprocessed_locations = []
     for location in locations:
@@ -74,7 +73,6 @@ async def geocode_locations(locations: List[Dict]) -> Dict:
 
 
 async def upload_locations(filepath: str, doctype: str):
-
     unprocessed_locations = []
 
     if doctype == "excel":

@@ -20,7 +20,6 @@ def send_otp(
     source: str,
     language: str,
 ) -> Any:
-
     client = boto3.client("pinpoint")
     allowed_attempts = 3
     origination_number = "PROJDIM-DEV"
@@ -48,7 +47,6 @@ def send_otp(
 
 
 def verify_otp(phone_number: str, otp: str, brand_name: str, source: str) -> Any:
-
     client = boto3.client("pinpoint")
     try:
         response = client.verify_otp_message(

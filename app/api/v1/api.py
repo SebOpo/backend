@@ -11,7 +11,7 @@ from app.components import (
     sessions,
     geocoding,
     changelogs,
-    activity_logs
+    activity_logs,
 )
 
 api_router = APIRouter()

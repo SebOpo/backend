@@ -17,9 +17,7 @@ from app.core.config import settings
 logger = logging.getLogger(settings.PROJECT_NAME)
 
 
-class CRUDLocation(
-    CRUDBase[Location, schemas.LocationRequest, schemas.LocationUpdate]
-):
+class CRUDLocation(CRUDBase[Location, schemas.LocationRequest, schemas.LocationUpdate]):
     def create_new_location(
         self,
         db: Session,
@@ -27,7 +25,6 @@ class CRUDLocation(
         location: schemas.LocationCreate,
         reported_by: users.models.User
     ) -> Location:
-
         try:
             db_obj = self.model(**(jsonable_encoder(location)))
             db_obj.status = 3
@@ -63,13 +60,13 @@ class CRUDLocation(
         )
 
     def get_locations_awaiting_reports(
-            self,
-            db: Session,
-            limit: int = 20,
-            page: int = 1,
-            date: datetime = None,
-            address_query: str = None,
-            region: str = None
+        self,
+        db: Session,
+        limit: int = 20,
+        page: int = 1,
+        date: datetime = None,
+        address_query: str = None,
+        region: str = None,
     ) -> List[Location]:
         filters = []
         if date:
@@ -78,7 +75,10 @@ class CRUDLocation(
             filters.append(
                 self.model.has(
                     func.concat(
-                        self.model.address, self.model.street_number, self.model.index, self.model.city
+                        self.model.address,
+                        self.model.street_number,
+                        self.model.index,
+                        self.model.city,
                     ).contains(address_query)
                 )
             )
@@ -159,8 +159,8 @@ class CRUDLocation(
 
         index_record = (
             db.query(GeospatialIndex)
-                .filter(GeospatialIndex.location_id == obj_in.location_id)
-                .first()
+            .filter(GeospatialIndex.location_id == obj_in.location_id)
+            .first()
         )
         index_record.status = 3
 
@@ -174,8 +174,8 @@ class CRUDLocation(
                 location_id=location.id,
                 old_flags=old_reports,
                 new_flags=obj_in.reports,
-                submitted_by=user.id
-            )
+                submitted_by=user.id,
+            ),
         )
 
         return location
@@ -183,21 +183,22 @@ class CRUDLocation(
     def get_activity_feed(self, db: Session, records: int = 10) -> List[Location]:
         return (
             db.query(self.model)
-                .filter(self.model.status == 3)
-                .order_by(desc(self.model.created_at))
-                .limit(records)
+            .filter(self.model.status == 3)
+            .order_by(desc(self.model.created_at))
+            .limit(records)
         )
 
     def bulk_insert_locations(self, db: Session, location_list: List[Dict]) -> Dict:
         from app.components.geospatial.crud import geospatial_index
         from app.components.geospatial.schemas import GeospatialRecordCreate
+
         added_locations = []
         exceptions = []
 
         reporting_user = (
             db.query(users.models.User)
-                .filter(users.models.User.email == settings.FIRST_SUPERUSER)
-                .first()
+            .filter(users.models.User.email == settings.FIRST_SUPERUSER)
+            .first()
         )
 
         for location in location_list:
@@ -205,12 +206,11 @@ class CRUDLocation(
                 db_obj = self.create_new_location(
                     db=db,
                     location=schemas.BulkLocationCreate(**location),
-                    reported_by=reporting_user
+                    reported_by=reporting_user,
                 )
 
                 index = geospatial_index.create(
-                    db=db,
-                    obj_in=GeospatialRecordCreate(**(jsonable_encoder(db_obj)))
+                    db=db, obj_in=GeospatialRecordCreate(**(jsonable_encoder(db_obj)))
                 )
 
                 self.submit_location_reports(

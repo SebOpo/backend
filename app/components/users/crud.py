@@ -2,28 +2,23 @@ from datetime import datetime, timedelta
 from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
 from app.components import oauth
 from app.components.users.models import User
 from app.components.users.schemas import UserCreate, UserBase, UserInvite
+from app.core.base_crud import CRUDBase
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password, create_access_token
-from app.core.base_crud import CRUDBase
 
 if TYPE_CHECKING:
     from app.components import organizations
 
 
-class CRUDUser(
-    CRUDBase[User, UserCreate, UserBase]
-):
-
+class CRUDUser(CRUDBase[User, UserCreate, UserBase]):
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
         return db.query(self.model).filter(self.model.email == email).first()
 
     def authenticate(self, db: Session, *, email: str, password: str) -> Optional[User]:
-
         user = self.get_by_email(db, email=email)
         if not user:
             return None
@@ -32,7 +27,7 @@ class CRUDUser(
         return user
 
     def update_info(
-            self, db: Session, *, obj_in: UserBase, user_email: str
+        self, db: Session, *, obj_in: UserBase, user_email: str
     ) -> Optional[User]:
         user = self.get_by_email(db, email=user_email)
         if not user:
@@ -46,9 +41,13 @@ class CRUDUser(
         db.refresh(user)
         return user
 
-    def verify_registration_token(self, db: Session, access_token: str) -> Optional[User]:
+    def verify_registration_token(
+        self, db: Session, access_token: str
+    ) -> Optional[User]:
         invited_user = (
-            db.query(self.model).filter(self.model.registration_token == access_token).first()
+            db.query(self.model)
+            .filter(self.model.registration_token == access_token)
+            .first()
         )
 
         if not invited_user or datetime.now() > invited_user.registration_token_expires:
@@ -57,9 +56,8 @@ class CRUDUser(
         return invited_user
 
     def confirm_registration(
-            self, db: Session, *, access_token: str, obj_in: UserCreate
+        self, db: Session, *, access_token: str, obj_in: UserCreate
     ) -> Optional[User]:
-
         invited_user = self.verify_registration_token(db, access_token)
         if not invited_user:
             return None
@@ -77,10 +75,13 @@ class CRUDUser(
         return invited_user
 
     def confirm_password_reset(
-            self, db: Session, renewal_token: str, new_password: str
+        self, db: Session, renewal_token: str, new_password: str
     ) -> Optional[User]:
-
-        user = db.query(self.model).filter(self.model.password_renewal_token == renewal_token).first()
+        user = (
+            db.query(self.model)
+            .filter(self.model.password_renewal_token == renewal_token)
+            .first()
+        )
 
         if not user or datetime.now() > user.password_renewal_token_expires:
             return None
@@ -94,9 +95,8 @@ class CRUDUser(
         return user
 
     def update_password(
-            self, db: Session, user_email: str, old_password: str, new_password: str
+        self, db: Session, user_email: str, old_password: str, new_password: str
     ) -> Optional[User]:
-
         user = self.authenticate(db, email=user_email, password=old_password)
         if not user:
             return None
@@ -107,7 +107,6 @@ class CRUDUser(
         return user
 
     def reset_password(self, db: Session, user_email: str) -> Optional[User]:
-
         user = self.get_by_email(db, email=user_email)
         if not user:
             return None
@@ -123,7 +122,9 @@ class CRUDUser(
         db.refresh(user)
         return user
 
-    def change_user_role(self, db: Session, user: User, new_role: oauth.models.OauthRole):
+    def change_user_role(
+        self, db: Session, user: User, new_role: oauth.models.OauthRole
+    ):
         user.role = new_role.verbose_name
         db.commit()
         db.refresh(user)
@@ -140,7 +141,6 @@ users = CRUDUser(User)
 
 
 def create(db: Session, *, obj_in: UserCreate, role: str) -> Optional[User]:
-
     user_role = oauth.crud.roles.get_role_by_name(db, role)
 
     if not user_role:
@@ -168,7 +168,6 @@ def create_invite(
     organization: "organizations.models.Organization",
     role_name: str
 ) -> Optional[User]:
-
     user_role = oauth.crud.roles.get_role_by_name(db=db, role_name=role_name)
     if not user_role:
         return None

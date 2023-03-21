@@ -54,8 +54,10 @@ async def generate_invite_link(
     new_user = crud.create_invite(
         db,
         obj_in=user,
-        organization=organizations.crud.organizations.get(db, model_id=user.organization),
-        role_name="aid_worker"
+        organization=organizations.crud.organizations.get(
+            db, model_id=user.organization
+        ),
+        role_name="aid_worker",
     )
 
     if not new_user:
@@ -80,7 +82,6 @@ async def generate_invite_link(
 
 @router.get("/verify", response_model=schemas.UserOut)
 async def verify_access_token(access_token: str, db: Session = Depends(get_db)) -> Any:
-
     invited_user = crud.users.verify_registration_token(db, access_token)
     if not invited_user:
         raise HTTPException(
@@ -93,7 +94,9 @@ async def verify_access_token(access_token: str, db: Session = Depends(get_db)) 
 async def confirm_user_registration(
     access_token: str, user: schemas.UserCreate, db: Session = Depends(get_db)
 ) -> Any:
-    new_user = crud.users.confirm_registration(db, access_token=access_token, obj_in=user)
+    new_user = crud.users.confirm_registration(
+        db, access_token=access_token, obj_in=user
+    )
 
     if not new_user:
         raise HTTPException(
@@ -150,7 +153,6 @@ async def change_user_password(
 
 @router.put("/password-reset")
 async def reset_user_password(user_email: str, db: Session = Depends(get_db)) -> Any:
-
     user = crud.users.reset_password(db, user_email)
     if not user:
         raise HTTPException(status_code=400, detail="No such user.")
@@ -173,7 +175,6 @@ async def reset_user_password(user_email: str, db: Session = Depends(get_db)) ->
 async def confirm_user_password_reset(
     renewal_data: schemas.UserPasswordRenewal, db: Session = Depends(get_db)
 ) -> Any:
-
     user = crud.users.confirm_password_reset(
         db, renewal_data.access_token, renewal_data.new_password
     )
@@ -187,18 +188,20 @@ async def confirm_user_password_reset(
 
 @router.put("/toggle-activity", response_model=schemas.UserOut)
 async def toggle_user_activity(
-        user_id: int,
-        current_user: models.User = Security(
-            get_current_active_user, scopes=["users:disable"]
-        ),
-        db: Session = Depends(get_db)
+    user_id: int,
+    current_user: models.User = Security(
+        get_current_active_user, scopes=["users:disable"]
+    ),
+    db: Session = Depends(get_db),
 ) -> Any:
-
     user = crud.users.get(db, model_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Not found")
 
-    if current_user.role != "platform_administrator" and current_user.organization != user.organization:
+    if (
+        current_user.role != "platform_administrator"
+        and current_user.organization != user.organization
+    ):
         raise HTTPException(status_code=403, detail="Not allowed")
 
     updated_user = crud.users.toggle_user_is_active(db, user)
@@ -208,25 +211,24 @@ async def toggle_user_activity(
     )
     # TODO Find a smarter way to write descriptions
     activity_log = activity_logs.crud.logs.create(
-        db, obj_in=activity_logs.schemas.ActivityLogBase(
+        db,
+        obj_in=activity_logs.schemas.ActivityLogBase(
             user_id=current_user.id,
             organization_id=user.organization,
             action_type=4,
-            description=f'{user.email} was {"unblocked" if updated_user.is_active else "blocked"} by {current_user.email}'
-        )
+            description=f'{user.email} was {"unblocked" if updated_user.is_active else "blocked"} by {current_user.email}',
+        ),
     )
 
     return updated_user
 
 
-@router.put('/change-role', response_model=schemas.UserOut)
+@router.put("/change-role", response_model=schemas.UserOut)
 async def change_user_role(
-        user_id: int,
-        role_id: int,
-        db: Session = Depends(get_db),
-        current_user=Security(
-            get_current_active_user, scopes=["users:roles"]
-        )
+    user_id: int,
+    role_id: int,
+    db: Session = Depends(get_db),
+    current_user=Security(get_current_active_user, scopes=["users:roles"]),
 ) -> Any:
     user = crud.users.get(db, model_id=user_id)
     if not user:
@@ -234,11 +236,16 @@ async def change_user_role(
 
     new_role = oauth.crud.roles.get(db, model_id=role_id)
     user_role = oauth.crud.roles.get_role_by_name(db, role_name=user.role)
-    current_user_role = oauth.crud.roles.get_role_by_name(db, role_name=current_user.role)
+    current_user_role = oauth.crud.roles.get_role_by_name(
+        db, role_name=current_user.role
+    )
     if not new_role:
         raise HTTPException(status_code=400, detail="Bad params")
 
-    if new_role.authority > current_user_role.authority or user_role.authority > current_user_role.authority:
+    if (
+        new_role.authority > current_user_role.authority
+        or user_role.authority > current_user_role.authority
+    ):
         raise HTTPException(status_code=403, detail="Not allowed")
 
     changed_user = crud.users.change_user_role(db, user=user, new_role=new_role)

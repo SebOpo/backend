@@ -2,7 +2,6 @@ from app.core.config import settings
 
 
 def return_template(template_type: str, *, link: str = None) -> dict:
-
     templates = {
         "invite": {
             "subject": "Invitation to the platform.",
