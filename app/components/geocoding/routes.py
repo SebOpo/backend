@@ -19,7 +19,6 @@ async def reverse_geocode_location(
     geocoder: enums.GeocoderEnum = "osm",
     current_user=Security(get_current_active_user, scopes=["locations:view"]),
 ) -> Any:
-
     address_info = geocoding.reverse(lat=lat, lng=lng, geocoding_service=geocoder)
 
     logger.debug("Geocoding results : {}".format(address_info))

@@ -85,7 +85,6 @@ def get_current_active_user(
     # TODO: Restore type of `user.models.User
     current_user=Security(get_current_user, scopes=["users:me"])
 ):
-
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="User is not active")
 

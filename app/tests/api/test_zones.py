@@ -3,15 +3,14 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.components.zones import crud as crud
+from app.core.config import settings
 from app.utils.geocoding import get_bounding_box_by_region_name
 
 
 def test_restrict_zone(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     payload = {"zone_type": 1, "verbose_name": "Crimea"}
 
     r = client.post(
@@ -31,7 +30,6 @@ def test_restrict_zone(
 def test_request_location_in_restricted_zone(
     client: TestClient, test_db: Session
 ) -> None:
-
     # sample location coordinates in Crimea
     payload = {"lat": 45.37232512282975, "lng": 33.94657337107382}
 
@@ -42,7 +40,6 @@ def test_request_location_in_restricted_zone(
 def test_get_all_restricted_zones(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/zones/zones", headers=superuser_token_headers
     )
@@ -56,7 +53,6 @@ def test_get_all_restricted_zones(
 def test_allow_zone(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     existing_zone = crud.zones.get_zone_by_verbose_name(test_db, "Crimea")
     r = client.delete(
         f"{settings.API_V1_STR}/zones/allow?zone_id={existing_zone.id}",

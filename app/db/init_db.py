@@ -1,11 +1,10 @@
 import os
 
-from sqlalchemy.orm import Session
 from dotenv import load_dotenv
+from sqlalchemy.orm import Session
 
 from app.components import oauth, users, organizations
 from app.core.config import settings
-
 
 load_dotenv()
 
@@ -31,12 +30,11 @@ ORGANIZATIONAL_LEADER_SCOPES = [
     "organizations:view",
     "organizations:edit",
     "oauth:read",
-    "changelogs:edit"
+    "changelogs:edit",
 ]
 
 
 def init_db(db: Session) -> users.models.User:
-
     for default_scope in oauth.models.default_scopes:
         oauth.crud.scopes.get_or_create_scope(
             db=db,
@@ -49,7 +47,9 @@ def init_db(db: Session) -> users.models.User:
 
     admin_role = oauth.crud.roles.get_or_create_role(
         db=db,
-        role=oauth.schemas.OauthRole(verbose_name="platform_administrator", authority=10),
+        role=oauth.schemas.OauthRole(
+            verbose_name="platform_administrator", authority=10
+        ),
         scope_list=admin_scopes,
     )
 
@@ -64,11 +64,8 @@ def init_db(db: Session) -> users.models.User:
 
     org_leader_role = oauth.crud.roles.get_or_create_role(
         db=db,
-        role=oauth.schemas.OauthRole(
-            verbose_name="organizational_leader",
-            authority=2
-        ),
-        scope_list=org_leader_scopes
+        role=oauth.schemas.OauthRole(verbose_name="organizational_leader", authority=2),
+        scope_list=org_leader_scopes,
     )
 
     # TODO refactor.
@@ -83,10 +80,7 @@ def init_db(db: Session) -> users.models.User:
 
     aid_worker_role = oauth.crud.roles.get_or_create_role(
         db=db,
-        role=oauth.schemas.OauthRole(
-            verbose_name="aid_worker",
-            authority=1
-        ),
+        role=oauth.schemas.OauthRole(verbose_name="aid_worker", authority=1),
         scope_list=aid_worker_scopes,
     )
 
@@ -120,14 +114,16 @@ def init_db(db: Session) -> users.models.User:
         user = users.crud.create(db, obj_in=new_user, role="platform_administrator")
 
     if settings.ENV_TYPE == "test":
-        aid_worker_user = users.crud.users.get_by_email(db, email=os.getenv("TEST_AID_WORKER_EMAIL"))
+        aid_worker_user = users.crud.users.get_by_email(
+            db, email=os.getenv("TEST_AID_WORKER_EMAIL")
+        )
         if not aid_worker_user:
             new_aid_worker = users.schemas.UserCreate(
                 username="Test aid worker",
                 full_name="Test aid worker",
                 email=os.getenv("TEST_AID_WORKER_EMAIL"),
                 password=os.getenv("TEST_AID_WORKER_PASSWORD"),
-                organization=organization.id
+                organization=organization.id,
             )
             aid_worker = users.crud.create(db, obj_in=new_aid_worker, role="aid_worker")
         organizational_leader_user = users.crud.users.get_by_email(
@@ -139,7 +135,7 @@ def init_db(db: Session) -> users.models.User:
                 full_name="Test org leader",
                 email=os.getenv("TEST_ORGANIZATIONAL_LEADER_EMAIL"),
                 password=os.getenv("TEST_ORGANIZATIONAL_LEADER_PASSWORD"),
-                organization=organization.id
+                organization=organization.id,
             )
             organizational_leader = users.crud.create(
                 db, obj_in=new_organizational_leader, role="organizational_leader"

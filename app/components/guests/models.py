@@ -5,7 +5,6 @@ from app.db.base_class import Base
 
 
 class GuestUser(Base):
-
     id = Column(Integer, primary_key=True, index=True)
 
     phone_number = Column(String, nullable=False, unique=True)

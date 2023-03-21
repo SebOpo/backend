@@ -24,7 +24,6 @@ limiter = Limiter(key_func=get_remote_address)
 async def request_otp_code(
     request: Request, phone_number: str, db: Session = Depends(get_db)
 ) -> Any:
-
     if not settings.EMAILS_ENABLED:
         raise HTTPException(
             status_code=400, detail="Cannot send an otp code, please try again later."
@@ -62,7 +61,6 @@ async def request_location_info_with_otp(
     location_request: schemas.LocationRequestOtp,
     db: Session = Depends(get_db),
 ) -> Any:
-
     if not settings.EMAILS_ENABLED:
         raise HTTPException(
             status_code=400,

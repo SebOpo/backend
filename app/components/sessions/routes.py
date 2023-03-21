@@ -15,7 +15,6 @@ async def get_active_sessions(
     current_user: users.models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-
     sessions = crud.get_user_active_sessions(db, user_id=current_user.id)
 
     return sessions
@@ -27,7 +26,6 @@ async def revoke_user_session(
     current_user: users.models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-
     revoked_session = crud.revoke_by_id(
         db, user_id=current_user.id, session_id=session_id
     )

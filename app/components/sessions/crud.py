@@ -13,7 +13,6 @@ def create(
     user_agent: str = None,
     user_ip: str = None,
 ):
-
     db_obj = models.SessionHistory(
         user_id=user_id,
         access_token=access_token,

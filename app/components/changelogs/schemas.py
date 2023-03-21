@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
-import calendar
 from typing import Optional, Dict, Any
 
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, validator
 
-from app.utils.validators import convert_to_utc
 from app.components import users, locations
+from app.utils.validators import convert_to_utc
 
 
 class ChangeLogBase(BaseModel):
@@ -26,7 +25,9 @@ class ChangeLogSearch(BaseModel):
     # The timedelta here is used for testing purposes.
     # The test won't pass with a default value, because the record is actually created after the api call.
     # Need to change it later I guess.
-    date_max: Optional[Any] = int((datetime.utcnow() + timedelta(minutes=15)).timestamp())
+    date_max: Optional[Any] = int(
+        (datetime.utcnow() + timedelta(minutes=15)).timestamp()
+    )
 
     @validator("date_min", "date_max", pre=True)
     def parse_dates(cls, v):
@@ -50,9 +51,8 @@ class ChangelogOut(ChangeLogBase):
 class OrganizationChangelogOut(ChangelogOut):
     location: locations.schemas.LocationOut
 
-    @validator('location', pre=True)
+    @validator("location", pre=True)
     def assemble_location(cls, v):
         # TODO find a better approach
         # This happens due to the location in the relationship not having the "position" attribute.
         return v.to_json()
-

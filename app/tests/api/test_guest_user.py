@@ -15,5 +15,4 @@ from sqlalchemy.orm import Session
 
 
 def test_user_incorrect_num(client: TestClient, db: Session) -> None:
-
     pass

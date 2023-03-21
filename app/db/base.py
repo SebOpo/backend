@@ -1,3 +1,4 @@
+from app.components.activity_logs.models import ActivityLog
 from app.components.changelogs.models import ChangeLog
 from app.components.geospatial.models import GeospatialIndex
 from app.components.guests.models import GuestUser
@@ -8,7 +9,6 @@ from app.components.reports.models import Report, ReportOption
 from app.components.sessions.models import SessionHistory
 from app.components.users.models import User
 from app.components.zones.models import Zone
-from app.components.activity_logs.models import ActivityLog
 from app.db.base_class import Base
 
 __all__ = [
@@ -26,5 +26,5 @@ __all__ = [
     "OauthScope",
     "OauthRole",
     "association_table",
-    "ActivityLog"
+    "ActivityLog",
 ]

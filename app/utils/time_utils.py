@@ -12,7 +12,6 @@ def str_time_prop(start, end, time_format, prop):
 
 
 def random_date(start, end, prop):
-
     # Usage example : random_date("1/1/2008 1:30 PM", "1/1/2009 4:50 AM", random.random())
     return str_time_prop(start, end, "%m/%d/%Y %I:%M %p", prop)
 
