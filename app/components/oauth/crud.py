@@ -79,7 +79,6 @@ class CRUDRoles(
         scope_list: List[schemas.OauthScope],
         obj_in: schemas.OauthRoleCreate,
     ) -> Optional[models.OauthRole]:
-
         data_to_update = obj_in.dict(exclude_unset=True)
         for field in data_to_update:
             setattr(role, field, data_to_update[field])

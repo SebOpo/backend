@@ -12,7 +12,6 @@ from app.tests.utils.utils import random_lower_string
 def test_invite_existing_user(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     dim_org = org_crud.organizations.get_by_name(test_db, "DIM")
     assert dim_org
 
@@ -92,7 +91,9 @@ def test_get_me(client: TestClient, aid_worker_token_headers: Dict[str, str]) ->
 def test_patch_user(
     client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
 ) -> None:
-    existing_user = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
+    existing_user = users.crud.users.get_by_email(
+        test_db, email=settings.TEST_USER_EMAIL
+    )
 
     payload = {
         "username": random_lower_string(),
@@ -167,7 +168,6 @@ def test_patch_user_password(
 def test_user_password_reset(
     client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
 ) -> None:
-
     r = client.put(
         f"{settings.API_V1_STR}/users/password-reset?user_email={settings.TEST_USER_EMAIL}"
     )
@@ -205,69 +205,66 @@ def test_user_password_reset(
 
 
 def test_toggle_user_activity(
-        client: TestClient,
-        test_db: Session,
-        superuser_token_headers: Dict[str, str],
-        aid_worker_token_headers: Dict[str, str]
+    client: TestClient,
+    test_db: Session,
+    superuser_token_headers: Dict[str, str],
+    aid_worker_token_headers: Dict[str, str],
 ) -> None:
-
     # TODO verify that the changelog visibility is changed accordingly.
 
-    aid_worker_id = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL).id
+    aid_worker_id = users.crud.users.get_by_email(
+        test_db, email=settings.TEST_USER_EMAIL
+    ).id
     r = client.put(
         f"{settings.API_V1_STR}/users/toggle-activity?user_id={aid_worker_id}",
-        headers=superuser_token_headers
+        headers=superuser_token_headers,
     )
     assert 200 <= r.status_code < 300
     disabled_user = r.json()
     assert disabled_user["is_active"] == False
 
-    r = client.get(
-        f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers
-    )
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers)
     assert r.status_code == 400
 
     r = client.put(
         f"{settings.API_V1_STR}/users/toggle-activity?user_id={aid_worker_id}",
-        headers=superuser_token_headers
+        headers=superuser_token_headers,
     )
     assert 200 <= r.status_code < 300
     disabled_user = r.json()
     assert disabled_user["is_active"] == True
 
-    r = client.get(
-        f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers
-    )
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=aid_worker_token_headers)
     assert 200 <= r.status_code < 300
 
 
 def test_change_user_role(
-        client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
+    client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
-    aid_worker_user = users.crud.users.get_by_email(test_db, email=settings.TEST_USER_EMAIL)
-    org_leader_role = oauth.crud.roles.get_role_by_name(test_db, role_name="organizational_leader")
+    aid_worker_user = users.crud.users.get_by_email(
+        test_db, email=settings.TEST_USER_EMAIL
+    )
+    org_leader_role = oauth.crud.roles.get_role_by_name(
+        test_db, role_name="organizational_leader"
+    )
 
     r = client.put(
         f"{settings.API_V1_STR}/users/change-role?user_id={aid_worker_user.id}&role_id={org_leader_role.id}",
-        headers=superuser_token_headers
+        headers=superuser_token_headers,
     )
     assert 200 <= r.status_code < 300
     changed_user = r.json()
     assert changed_user["role"] == "organizational_leader"
 
 
-def test_change_user_role_not_allowed(
-        client: TestClient, test_db: Session
-) -> None:
-
+def test_change_user_role_not_allowed(client: TestClient, test_db: Session) -> None:
     # We need to reacquire aid worker headers because the ones in fixtures are preloaded for an aid worker role.
     # But since we changed it in the previous test, we need to re login to acquire new permissions.
     # TODO think of this.
 
     data = {
         "username": settings.TEST_USER_EMAIL,
-        "password": settings.TEST_USER_PASSWORD
+        "password": settings.TEST_USER_PASSWORD,
     }
     r = client.post(f"{settings.API_V1_STR}/auth/login/token", data=data)
     response = r.json()
@@ -279,7 +276,7 @@ def test_change_user_role_not_allowed(
 
     r = client.put(
         f"{settings.API_V1_STR}/users/change-role?user_id={superuser.id}&role_id={aid_worker_role.id}",
-        headers=headers
+        headers=headers,
     )
     assert r.status_code == 403
 
@@ -287,7 +284,6 @@ def test_change_user_role_not_allowed(
 def test_user_delete_me(
     client: TestClient, test_db: Session, aid_worker_token_headers: Dict[str, str]
 ) -> None:
-
     r = client.delete(
         f"{settings.API_V1_STR}/users/delete-me", headers=aid_worker_token_headers
     )

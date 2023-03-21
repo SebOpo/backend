@@ -7,7 +7,6 @@ from app.components.guests import models
 
 
 def create(db: Session, *, phone_number: str) -> models.GuestUser:
-
     db_obj = models.GuestUser(phone_number=phone_number)
 
     db.add(db_obj)
@@ -32,7 +31,6 @@ def get_or_create(db: Session, phone_number: str) -> models.GuestUser:
 
 
 def new_otp_request(db: Session, user_id: int) -> models.GuestUser:
-
     guest_user = db.query(models.GuestUser).get(user_id)
 
     guest_user.last_request = datetime.now()

@@ -7,7 +7,6 @@ load_dotenv()
 
 
 class LogConfig(BaseModel):
-
     LOGGER_NAME: str = os.getenv("PROJECT_NAME", "PROJECT-DIM")
     LOG_FORMAT: str = "%(levelprefix)s | %(asctime)s | %(message)s"
     LOG_LEVEL: str = "DEBUG"

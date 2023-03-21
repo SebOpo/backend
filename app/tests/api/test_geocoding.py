@@ -8,7 +8,6 @@ from app.core.config import settings
 def test_reverse_geocode(
     client: TestClient, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     sample_coords = {"lat": "49.2363517942551", "lng": "28.46728473547535"}
 
     r = client.get(

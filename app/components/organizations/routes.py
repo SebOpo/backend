@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status, Respons
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
+from app.components import users, changelogs
 from app.components.organizations import crud, schemas
-from app.components import users, changelogs, activity_logs
 from app.core.config import settings
 from app.utils.email_sender import send_email
 
@@ -36,19 +36,21 @@ async def create_organization(
     return new_organization
 
 
-@router.post('/add')
+@router.post("/add")
 async def add_new_organization(
-        organization: schemas.OrganizationLeaderInvite,
-        db: Session = Depends(get_db),
-        current_active_user=Security(
-            get_current_active_user, scopes=["organizations:create"]
-        ),
+    organization: schemas.OrganizationLeaderInvite,
+    db: Session = Depends(get_db),
+    current_active_user=Security(
+        get_current_active_user, scopes=["organizations:create"]
+    ),
 ) -> Any:
     existing_organization = crud.organizations.get_by_name(db, name=organization.name)
     if existing_organization:
         raise HTTPException(status_code=400, detail="Such organization already exists.")
 
-    new_organization = crud.organizations.create(db, obj_in=organization.dict(exclude={'emails'}))
+    new_organization = crud.organizations.create(
+        db, obj_in=organization.dict(exclude={"emails"})
+    )
 
     added_users = []
 
@@ -56,11 +58,10 @@ async def add_new_organization(
         new_user = users.crud.create_invite(
             db,
             obj_in=users.schemas.UserInvite(
-                email=email,
-                organization=new_organization.id
+                email=email, organization=new_organization.id
             ),
             organization=new_organization,
-            role_name="organizational_leader"
+            role_name="organizational_leader",
         )
         if settings.EMAILS_ENABLED:
             send_email(
@@ -72,9 +73,7 @@ async def add_new_organization(
             )
         added_users.append(new_user)
 
-    return {
-        user.email: user.registration_token for user in added_users
-    }
+    return {user.email: user.registration_token for user in added_users}
 
 
 @router.get("/all", response_model=List[schemas.OrganizationOut])
@@ -128,7 +127,6 @@ async def edit_organization_data(
         get_current_active_user, scopes=["organizations:edit"]
     ),
 ) -> Any:
-
     db_organization = crud.organizations.get(db, model_id=organization_id)
     if not db_organization or current_active_user.organization != organization_id:
         raise HTTPException(status_code=403, detail="Not permitted.")
@@ -184,13 +182,15 @@ async def remove_organization_member(
     return updated_organization
 
 
-@router.put('/toggle-activity/{organization_id}', response_model=schemas.OrganizationOut)
+@router.put(
+    "/toggle-activity/{organization_id}", response_model=schemas.OrganizationOut
+)
 async def toggle_organization_activity(
-        organization_id: int,
-        db: Session = Depends(get_db),
-        current_active_user=Security(
-            get_current_active_user, scopes=["organizations:delete"]
-        )
+    organization_id: int,
+    db: Session = Depends(get_db),
+    current_active_user=Security(
+        get_current_active_user, scopes=["organizations:delete"]
+    ),
 ) -> Any:
     organization = crud.organizations.get(db, model_id=organization_id)
     if not organization:
@@ -202,8 +202,10 @@ async def toggle_organization_activity(
     for user in updated_organization.participants:
         updated_user = users.crud.users.toggle_user_is_active(db, user)
         # TODO return the number of updated changelogs.
-        updated_changelogs = changelogs.crud.changelogs.bulk_toggle_changelog_visibility(
-            db, visible=updated_user.is_active, user_id=updated_user.id
+        updated_changelogs = (
+            changelogs.crud.changelogs.bulk_toggle_changelog_visibility(
+                db, visible=updated_user.is_active, user_id=updated_user.id
+            )
         )
 
     # TODO add activity log record
@@ -222,7 +224,9 @@ async def delete_organization(
     if not organization:
         raise HTTPException(status_code=404, detail="Not found")
 
-    removed_organization = crud.organizations.delete_organization(db, organization_id=organization_id)
+    removed_organization = crud.organizations.delete_organization(
+        db, organization_id=organization_id
+    )
     if removed_organization:
         raise HTTPException(status_code=400, detail="Cannot perform such action")
 

@@ -1,7 +1,7 @@
 import geopy.distance
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 from app.components.guests.models import GuestUser
 from app.db.base_class import Base
@@ -11,7 +11,6 @@ status_list = {1: "Awaiting review", 2: "Awaiting approval", 3: "Approved"}
 
 
 class Location(Base):
-
     id = Column(Integer, primary_key=True, index=True)
 
     created_at = Column(DateTime, default=utcnow())

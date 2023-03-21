@@ -26,7 +26,6 @@ gmaps_geocoder = GoogleV3(api_key=settings.GMAPS_APIKEY)
 
 
 def geocode_address(address: str, city: str, region: str = "ua") -> Any:
-
     """
     Takes an address string (can add more precision with city and region) to return its coordinates
 
@@ -48,7 +47,6 @@ def geocode_address(address: str, city: str, region: str = "ua") -> Any:
 
 
 def reverse(lat: float, lng: float, geocoding_service: str = "osm") -> Optional[Dict]:
-
     """
     Takes the coordinates of a location to return its address information from the chosen provider or None if this info
     cannot be obtained.
@@ -92,7 +90,6 @@ def reverse(lat: float, lng: float, geocoding_service: str = "osm") -> Optional[
 
 
 def get_bounding_box_by_region_name(region_name: str):
-
     """
     This method takes a region name ( Could be a Country/City/Administrative area/Village etc. or even a street name )
     to return a bounding box of this object represented by geometrical points (Either a Polygon or a Multipolygon for

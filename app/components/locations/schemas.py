@@ -97,4 +97,3 @@ class PendingLocationSearch(BaseModel):
         if not v or isinstance(v, datetime):
             return
         return datetime.fromtimestamp(int(v))
-

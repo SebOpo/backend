@@ -11,7 +11,6 @@ from app.core.config import settings
 def test_create_organization(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     payload = {"name": "TestOrg"}
 
     r = client.post(
@@ -28,18 +27,17 @@ def test_create_organization(
 
 
 def test_add_new_organization(
-        client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
+    client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     payload = {
         "name": "SampleOrg",
-        "emails": ["someemail@test.com", "someotheremail@test.com"]
+        "emails": ["someemail@test.com", "someotheremail@test.com"],
     }
 
     r = client.post(
         f"{settings.API_V1_STR}/organizations/add",
         json=payload,
-        headers=superuser_token_headers
+        headers=superuser_token_headers,
     )
     assert 200 <= r.status_code < 300
     # TODO modify this when we have our return value in endpoint
@@ -55,8 +53,12 @@ def test_edit_organization(
     superuser_token_headers: Dict[str, str],
     master_organization_id: int,
 ) -> None:
-
-    payload = {"description": "Master organization", "website": "https://dim.org", "country": "Ukraine", "city": "Kiev"}
+    payload = {
+        "description": "Master organization",
+        "website": "https://dim.org",
+        "country": "Ukraine",
+        "city": "Kiev",
+    }
 
     r = client.put(
         f"{settings.API_V1_STR}/organizations/{master_organization_id}/edit",
@@ -75,7 +77,6 @@ def test_edit_organization(
 def test_get_all_organizations(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/organizations/all", headers=superuser_token_headers
     )
@@ -89,7 +90,6 @@ def test_get_organization_by_id(
     superuser_token_headers: Dict[str, str],
     master_organization_id: int,
 ) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/organizations/{master_organization_id}",
         headers=superuser_token_headers,
@@ -104,7 +104,6 @@ def test_get_organization_by_id(
 def test_search_organization(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     r = client.get(
         f"{settings.API_V1_STR}/organizations/search?query=Di",
         headers=superuser_token_headers,
@@ -123,7 +122,6 @@ def test_remove_organization_member(
     superuser_id: int,
     master_organization_id: int,
 ) -> None:
-
     r = client.put(
         f"{settings.API_V1_STR}/organizations/{master_organization_id}/remove?user_id={superuser_id}",
         headers=superuser_token_headers,
@@ -144,7 +142,6 @@ def test_invite_organization_members(
     master_organization_id: int,
     superuser_id: int,
 ) -> None:
-
     payload = {"emails": [settings.FIRST_SUPERUSER]}
 
     r = client.put(
@@ -162,16 +159,16 @@ def test_invite_organization_members(
 
 
 def test_disable_organization(
-        client: TestClient,
-        test_db: Session,
-        superuser_token_headers: Dict[str, str],
-        superuser_id: int
+    client: TestClient,
+    test_db: Session,
+    superuser_token_headers: Dict[str, str],
+    superuser_id: int,
 ) -> None:
     test_org = crud.organizations.get_by_name(test_db, name="TestOrg")
 
     r = client.put(
         f"{settings.API_V1_STR}/organizations/toggle-activity/{test_org.id}",
-        headers=superuser_token_headers
+        headers=superuser_token_headers,
     )
     assert 200 <= r.status_code < 300
     disabled_org = r.json()
@@ -181,7 +178,6 @@ def test_disable_organization(
 def test_delete_organization(
     client: TestClient, test_db: Session, superuser_token_headers: Dict[str, str]
 ) -> None:
-
     organization_to_delete = crud.organizations.get_by_name(test_db, "TestOrg")
 
     r = client.delete(
