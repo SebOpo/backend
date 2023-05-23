@@ -11,7 +11,7 @@ COPY ./app /src/app
 COPY ./startup.sh /src/startup.sh
 
 FROM base as test
-CMD ["/bin/sh", "-c", "pre_start.sh"]
+RUN ["/bin/sh", "-c", "pre_start.sh"]
 
 FROM base as production
 EXPOSE 7000
