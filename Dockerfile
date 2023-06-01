@@ -4,7 +4,6 @@ FROM public.ecr.aws/docker/library/python:3.9 AS base
 WORKDIR /src
 COPY ./requirements.txt /src/requirements.txt
 COPY ./populate_db.py /src/populate_db.py
-COPY ./pre_start.sh /src/pre_start.sh
 COPY ./alembic.ini /src/alembic.ini
 COPY ./alembic /src/alembic
 COPY ./.env /src/.env
