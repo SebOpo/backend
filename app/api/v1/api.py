@@ -12,6 +12,7 @@ from app.components import (
     geocoding,
     changelogs,
     activity_logs,
+    phone_codes
 )
 
 api_router = APIRouter()
@@ -27,3 +28,4 @@ api_router.include_router(guests.routes.router)
 api_router.include_router(geocoding.routes.router)
 api_router.include_router(changelogs.routes.router)
 api_router.include_router(activity_logs.routes.router)
+api_router.include_router(phone_codes.routes.router)
