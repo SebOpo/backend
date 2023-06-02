@@ -21,6 +21,7 @@ services:
 
   fastapi:
     container_name: fastapi_container
+    image: projectdim.org/fastapi:${version:-latest}
     build:
       context: .
       dockerfile: Dockerfile

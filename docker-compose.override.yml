@@ -1,8 +1,12 @@
 version: '3.8'
 services:
   fastapi:
+    image: projectdim.org/fastapi:dev-${version:-latest}
+    build: 
+      target: dev
     volumes:
       - ./:/src
+
 
   pgadmin:
     profiles:
@@ -31,6 +35,7 @@ services:
       - black
     # Uncompromising code formatter
     # To integrate with IDE check: https://black.readthedocs.io/en/stable/integrations/editors.html
+    image: projectdim.org/black:blackd
     build:
       context: .
       dockerfile: black/Dockerfile
