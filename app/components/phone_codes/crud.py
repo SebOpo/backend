@@ -11,7 +11,11 @@ logger = logging.getLogger(settings.PROJECT_NAME)
 
 
 class CRUDPhoneCode(
-    CRUDBase[phone_codes.models.PhoneCode, phone_codes.schemas.PhoneCodeOut, phone_codes.schemas.PhoneCodeOut]
+    CRUDBase[
+        phone_codes.models.PhoneCode,
+        phone_codes.schemas.PhoneCodeOut,
+        phone_codes.schemas.PhoneCodeOut,
+    ]
 ):
     def get_list(self, db: Session):
         return db.query(self.model).filter(self.model.is_active == True).all()
