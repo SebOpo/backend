@@ -10,11 +10,14 @@ build:
 	docker compose build
 
 test:
-	docker compose run fastapi  python -m pytest
+	docker compose run --rm fastapi python3 -m pytest
 
 exec:
 	docker compose exec fastapi bash
 
+poetry:
+	docker build --target poetry -t dim/api:poetry .
+	docker run -it --rm -v ${PWD}:/src dim/api:poetry
 
 lint:
 	@echo "🧹 Run Bllack with pyfound/black:latest_release"

@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1
 
+# For M1/M2 chip set use docker build --platform linux/amd64 
+# Or set env variable: export DOCKER_DEFAULT_PLATFORM=linux/amd64 
+
 FROM public.ecr.aws/docker/library/python:3.9-slim AS python-base
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -19,6 +22,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y curl
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
 
+# ============ TARGET: poetry ============ 
+# Add/remove/update packages
 # run: docker build --target poetry -t poetry .
 # docker run -it --rm -v ${PWD}:/src poetry
 FROM poetry-base as poetry
@@ -27,16 +32,18 @@ WORKDIR /src
 ENTRYPOINT [ "bash" ]
 
 
+# ============ TARGET: builder-base ============ 
+# Instal packages without dev group
 FROM poetry-base as builder-base
-# copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
+# copy project requirement files here to ensure they will be cached.
 COPY poetry.lock pyproject.toml ./
-# install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 RUN poetry install --without dev
 
-# ============ DEV TARGET ============ 
-# docker build --target dev -t app:dev .
-# docker run --rm -v ${PWD}:/src app:dev
+
+# ============ TARGET: DEV ============ 
+# docker build --target dev -t dim:dev .
+# docker run --rm -v ${PWD}:/src dim:dev
 FROM python-base as dev
 ENV FASTAPI_ENV=development
 
@@ -51,29 +58,32 @@ VOLUME [ "/src" ]
 # will become mountpoint of our code
 WORKDIR /src
 EXPOSE 7000
+CMD ["/bin/bash", "-c", "/src/startup.sh" ]
 
-CMD ["uvicorn", "--reload", "app.main:app", "--host", "0.0.0.0", "--port", "7000"]
 
-
-# ============ TEST TARGET ============ 
-
+# ============ TARGET: TEST ============ 
+# docker build --target test -t dim:test .
+# docker run --rm -v ${PWD}:/src --env-file .env dim:test
 FROM dev as test
 VOLUME [ "/src" ]
 WORKDIR /src
 ENTRYPOINT [ "python3", "-m", "pytest" ]
 
 
-# ============ PRODUCTION TARGET ============ 
+# ============ TARGET: PRODUCTION ============ 
 # docker build -t app .
-# docker build --platform linux/amd64 -t app .
-# docker run --rm app
+# docker run --rm --env-file .env app
 FROM python-base as prod
 ENV FASTAPI_ENV=production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 WORKDIR /src
+
+COPY ./populate_db.py /src/populate_db.py
+COPY ./alembic.ini /src/alembic.ini
+COPY ./alembic /src/alembic
 COPY ./app /src/app/
 COPY ./.env /src/.env
+COPY ./startup.sh /src/startup.sh
+
 EXPOSE 7000
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "-b", "0.0.0.0:7000", "-w", "2"]
-
-
+CMD ["/bin/bash", "-c", "/src/startup.sh" ]
