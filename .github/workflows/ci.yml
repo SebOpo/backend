@@ -8,7 +8,6 @@ on:
 
 jobs:
   lint:
-    if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
     container:
       image: python:3.8-alpine

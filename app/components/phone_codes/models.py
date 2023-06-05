@@ -5,6 +5,7 @@ from app.db.utc_convertation import utcnow
 
 
 class PhoneCode(Base):
+
     id = Column(Integer, primary_key=True, index=True)
 
     created_at = Column(DateTime, default=utcnow())
