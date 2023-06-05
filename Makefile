@@ -15,6 +15,11 @@ test:
 exec:
 	docker compose exec fastapi bash
 
+
+lint:
+	@echo "🧹 Run Bllack with pyfound/black:latest_release"
+	docker run --rm --volume $(shell pwd):/src --workdir /src pyfound/black:latest_release black .
+
 pre-start: up test down
 
 # convenience targets

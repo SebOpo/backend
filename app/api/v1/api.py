@@ -12,7 +12,7 @@ from app.components import (
     geocoding,
     changelogs,
     activity_logs,
-    phone_codes
+    phone_codes,
 )
 
 api_router = APIRouter()
