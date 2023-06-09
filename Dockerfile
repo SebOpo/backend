@@ -41,10 +41,12 @@ COPY poetry.lock pyproject.toml ./
 RUN poetry install --without dev
 
 
-# ============ TARGET: DEV ============ 
-# docker build --target dev -t dim:dev .
-# docker run --rm -v ${PWD}:/src dim:dev
-FROM python-base as dev
+# ============ TARGET: DEV-LOCAL ============ 
+# docker build --target dev-local -t dim:dev-local .
+# docker run --rm -v ${PWD}:/src dim:dev-local
+# to run test:
+# docker run --rm -v ${PWD}:/src dim:dev-local python3 -m pytest
+FROM python-base as dev-local
 ENV FASTAPI_ENV=development
 
 # copy in our built poetry + venv
@@ -60,14 +62,6 @@ WORKDIR /src
 EXPOSE 7000
 CMD ["/bin/bash", "-c", "/src/startup.sh" ]
 
-
-# ============ TARGET: TEST ============ 
-# docker build --target test -t dim:test .
-# docker run --rm -v ${PWD}:/src --env-file .env dim:test
-FROM dev as test
-VOLUME [ "/src" ]
-WORKDIR /src
-ENTRYPOINT [ "python3", "-m", "pytest" ]
 
 
 # ============ TARGET: PRODUCTION ============ 

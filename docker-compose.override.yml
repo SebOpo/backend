@@ -1,9 +1,9 @@
 version: '3.8'
 services:
   fastapi:
-    image: projectdim.org/fastapi:dev-${version:-latest}
+    image: projectdim.org/fastapi:dev-local-${version:-latest}
     build: 
-      target: dev
+      target: dev-local
     volumes:
       - ./:/src
 
